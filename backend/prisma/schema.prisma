@@ -1,0 +1,149 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("TEST_DATABASE_URL")
+}
+
+enum Role {
+  user
+  moderator
+  admin
+}
+
+model User {
+  id       String   @id @default(ulid())
+  email    String   @unique
+  password String
+  profile  Profile?
+  role     Role     @default(user)
+
+  @@map("users")
+}
+
+model Profile {
+  id             String            @id @default(uuid())
+  firstName      String            @map("first_name")
+  lastName       String            @map("last_name")
+  user           User              @relation(fields: [userId], references: [id])
+  userId         String            @unique
+  avatar         String
+  friends        FriendshipUsers[]
+  posts          Post[]
+  comments       Comment[]
+  likedPosts     LikedPosts[]
+  likedComments  LikedComments[]
+  friendRequests FriendRequests[]
+  chats          Chat[]
+  messages       Message[]
+
+  @@map("profiles")
+}
+
+model Friend {
+  id       String            @id @default(uuid())
+  friendId String
+  friends  FriendshipUsers[]
+
+  @@map("friends")
+}
+
+model FriendRequest {
+  id        String           @id @default(uuid())
+  requestId String
+  requests  FriendRequests[]
+
+  @@map("friend_request")
+}
+
+model FriendshipUsers {
+  user     Profile @relation(fields: [userId], references: [id])
+  userId   String
+  friend   Friend  @relation(fields: [friendId], references: [id])
+  friendId String
+
+  @@id([userId, friendId])
+}
+
+model FriendRequests {
+  user         Profile       @relation(fields: [userId], references: [id])
+  userId       String
+  request      FriendRequest @relation(fields: [secondUserId], references: [id])
+  secondUserId String
+
+  @@id([userId, secondUserId])
+  @@map("friend_requests")
+}
+
+model Post {
+  id        String       @id @default(ulid())
+  text      String
+  author    Profile      @relation(fields: [authorId], references: [id])
+  authorId  String
+  timestamp DateTime     @default(now())
+  likes     Int          @default(0)
+  likedBy   LikedPosts[]
+
+  @@map("posts")
+}
+
+model LikedPosts {
+  user   Profile @relation(fields: [userId], references: [id])
+  userId String
+  post   Post    @relation(fields: [postId], references: [id])
+  postId String
+
+  @@id([userId, postId])
+  @@map("liked_posts")
+}
+
+model Comment {
+  id        String          @id @default(uuid())
+  text      String
+  timestamp DateTime        @default(now())
+  author    Profile         @relation(fields: [authorId], references: [id])
+  authorId  String
+  likes     Int             @default(0)
+  likedBy   LikedComments[]
+
+  @@map("comments")
+}
+
+model LikedComments {
+  user      Profile @relation(fields: [userId], references: [id])
+  userId    String
+  comment   Comment @relation(fields: [commentId], references: [id])
+  commentId String
+
+  @@id([userId, commentId])
+  @@map("liked_comments")
+}
+
+model Chat {
+  id       String    @id @default(uuid())
+  users    Profile[]
+  messages Message[]
+
+  @@map("chats")
+}
+
+model Message {
+  id         String   @id @default(uuid())
+  text       String
+  timestamp  DateTime @default(now())
+  chats      Chat     @relation(fields: [chatroomId], references: [id])
+  chatroomId String
+  user       Profile  @relation(fields: [userId], references: [id])
+  userId     String
+
+  @@map("messages")
+}
