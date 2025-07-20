@@ -6,6 +6,6 @@ const userRouter = Router();
 
 userRouter.post("/sign-up", userController.signUpUser);
 
-userRouter.get("/log-in", userController.logInUser);
+userRouter.post("/log-in", userController.logInUser);
 
 module.exports = userRouter;
