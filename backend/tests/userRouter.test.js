@@ -11,7 +11,7 @@ app.use("/", userRouter);
 const prisma = new PrismaClient();
 
 describe("Test if Sign Up route works", () => {
-  beforeEach(async () => {
+  beforeAll(async () => {
     await prisma.user.deleteMany({});
   });
 
@@ -38,6 +38,21 @@ describe("Test if Sign Up route works", () => {
       })
       .then((res) => {
         expect(res.body.errors[0].msg).toEqual("Passwords must match.");
+        done();
+      });
+  });
+
+  it("email must be of email type", (done) => {
+    request(app)
+      .post("/sign-up")
+      .type("form")
+      .send({
+        email: "test",
+        password: "Test1234!",
+        confirm_password: "Test1234!",
+      })
+      .then((res) => {
+        expect(res.body.errors[0].msg).toEqual("Invalid email address.");
         done();
       });
   });
@@ -69,6 +84,21 @@ describe("Test if Sign Up route works", () => {
         confirm_password: "Test1234!",
       })
       .expect(200, done);
+  });
+
+  it("user that has the same email can't be created", (done) => {
+    request(app)
+      .post("/sign-up")
+      .type("form")
+      .send({
+        email: "tes@test.com",
+        password: "Test1234!",
+        confirm_password: "Test1234!",
+      })
+      .then((res) => {
+        expect(res.body.errors[0].msg).toEqual("User already exists");
+        done();
+      });
   });
 });
 
