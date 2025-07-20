@@ -17,9 +17,9 @@ app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(attachUser);
 
 app.use("/", userRouter);
+app.use(attachUser);
 
 helmet.contentSecurityPolicy({
   directives: {
