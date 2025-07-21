@@ -47,23 +47,25 @@ const createUser = async (email, password, first_name, last_name, avatar) => {
 
 // profile controller queries
 
-const createProfile = async (firstName, lastName, avatar, userId) => {
-  return await prisma.profile.create({
-    data: {
-      firstName: firstName,
-      lastName: lastName,
-      avatar: avatar,
-      userId: userId,
-    },
-  });
+const getProfile = async (userId) => {
+  try {
+    return await prisma.profile.findUnique({
+      where: {
+        userId: userId,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    return err;
+  }
 };
 
 const getProfiles = async (userId) => {
   try {
-    return await prisma.profile.findUnique({
+    return await prisma.profile.findMany({
       where: {
-        id: {
-          not: userId,
+        NOT: {
+          userId: userId,
         },
       },
     });
@@ -76,5 +78,6 @@ const getProfiles = async (userId) => {
 module.exports = {
   findUser,
   createUser,
+  getProfile,
   getProfiles,
 };
