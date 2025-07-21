@@ -25,12 +25,17 @@ const findUser = async (email) => {
 };
 
 const createUser = async (email, password) => {
-  return await prisma.user.create({
-    data: {
-      email: email,
-      password: password,
-    },
-  });
+  try {
+    return await prisma.user.create({
+      data: {
+        email: email,
+        password: password,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    return err;
+  }
 };
 
 // profile controller queries
