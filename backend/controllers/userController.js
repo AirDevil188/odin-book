@@ -12,7 +12,9 @@ const validateUser = [
     .isEmail()
     .custom(async (value) => {
       const user = await db.findUser(value);
-      if (user) throw new Error("User already exists");
+      if (user) {
+        throw new Error("User already exists");
+      }
     }),
   body(
     "password",
@@ -33,15 +35,14 @@ const signUpUser = [
   async (req, res, next) => {
     const { email, password } = req.body;
     const errors = validationResult(req);
-
     if (!errors.isEmpty()) {
-      return res.status(422).json([errors]);
+      return res.status(422).json(errors);
     }
 
     const hashedPassword = await createHashedPassword(password);
     try {
       const user = await db.createUser(email, hashedPassword);
-      const token = singToken(user);
+      const token = await singToken(user);
       const decodedToken = decodeToken(token);
       const expiresAt = decodedToken.exp;
 
@@ -49,7 +50,7 @@ const signUpUser = [
         httpOnly: true,
       });
 
-      const { email, role } = user;
+      const { role } = user;
 
       const userInfo = {
         email,
@@ -79,7 +80,7 @@ const logInUser = async (req, res, next) => {
       message: "Wrong email or password",
     });
 
-  const match = verifyPassword(password, user.password);
+  const match = await verifyPassword(password, user.password);
 
   if (match) {
     const { ...rest } = user;
