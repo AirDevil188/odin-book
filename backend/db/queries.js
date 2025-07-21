@@ -30,7 +30,36 @@ const createUser = async (email, password) => {
   });
 };
 
+// profile controller queries
+
+const createProfile = async (firstName, lastName, avatar, userId) => {
+  return await prisma.profile.create({
+    data: {
+      firstName: firstName,
+      lastName: lastName,
+      avatar: avatar,
+      userId: userId,
+    },
+  });
+};
+
+const getProfiles = async (userId) => {
+  try {
+    return await prisma.profile.findUnique({
+      where: {
+        id: {
+          not: userId,
+        },
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    return err;
+  }
+};
+
 module.exports = {
   findUser,
   createUser,
+  getProfiles,
 };
