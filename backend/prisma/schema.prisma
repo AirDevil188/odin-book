@@ -27,7 +27,7 @@ model Profile {
   id             String            @id @default(uuid())
   firstName      String            @map("first_name")
   lastName       String            @map("last_name")
-  user           User              @relation(fields: [userId], references: [id])
+  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId         String            @unique
   avatar         String?
   friends        FriendshipUsers[]
