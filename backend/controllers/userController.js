@@ -29,11 +29,21 @@ const validateUser = [
   body("confirm_password", "Passwords must match.").custom((value, { req }) => {
     return value === req.body.password;
   }),
+  body("first_name")
+    .trim()
+    .notEmpty()
+    .isLength({ min: 1 })
+    .withMessage("First Name must contain at least one character"),
+  body("last_name")
+    .trim()
+    .notEmpty()
+    .isLength({ min: 1 })
+    .withMessage("Last Name must contain at least one character"),
 ];
 const signUpUser = [
   validateUser,
   async (req, res, next) => {
-    const { email, password } = req.body;
+    const { email, password, first_name, last_name, avatar } = req.body;
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(422).json(errors);
@@ -41,7 +51,12 @@ const signUpUser = [
 
     const hashedPassword = await createHashedPassword(password);
     try {
-      const user = await db.createUser(email, hashedPassword);
+      const user = await db.createUser(
+        email,
+        hashedPassword,
+        first_name,
+        last_name
+      );
       const token = await singToken(user);
       const decodedToken = decodeToken(token);
       const expiresAt = decodedToken.exp;
@@ -55,6 +70,8 @@ const signUpUser = [
       const userInfo = {
         email,
         role,
+        first_name,
+        last_name,
       };
       return res.json({
         message: "User Created!",

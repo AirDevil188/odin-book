@@ -24,12 +24,19 @@ const findUser = async (email) => {
   });
 };
 
-const createUser = async (email, password) => {
+const createUser = async (email, password, first_name, last_name, avatar) => {
   try {
     return await prisma.user.create({
       data: {
         email: email,
         password: password,
+        profile: {
+          create: {
+            firstName: first_name,
+            lastName: last_name,
+            avatar: avatar,
+          },
+        },
       },
     });
   } catch (err) {

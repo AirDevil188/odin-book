@@ -35,6 +35,8 @@ describe("Test if Sign Up route works", () => {
         email: "tes@test.com",
         password: "Test1234!",
         confirm_password: "Test1235!",
+        first_name: "Test",
+        last_name: "Test",
       })
       .then((res) => {
         expect(res.body.errors[0].msg).toEqual("Passwords must match.");
@@ -50,6 +52,8 @@ describe("Test if Sign Up route works", () => {
         email: "test",
         password: "Test1234!",
         confirm_password: "Test1234!",
+        first_name: "Test",
+        last_name: "Test",
       })
       .then((res) => {
         expect(res.body.errors[0].msg).toEqual("Invalid email address.");
@@ -65,6 +69,8 @@ describe("Test if Sign Up route works", () => {
         email: "tes@test.com",
         password: "1234s",
         confirm_password: "1234s",
+        first_name: "Test",
+        last_name: "Test",
       })
       .then((res) => {
         expect(res.body.errors[0].msg).toEqual(
@@ -82,6 +88,8 @@ describe("Test if Sign Up route works", () => {
         email: "tes@test.com",
         password: "Test1234!",
         confirm_password: "Test1234!",
+        first_name: "Test",
+        last_name: "Test",
       })
       .expect(200, done);
   });
