@@ -7,6 +7,7 @@ config();
 
 const singToken = async (credentials) => {
   const payload = {
+    id: credentials.id,
     email: credentials.email,
     role: credentials.role,
   };
