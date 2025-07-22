@@ -1,5 +1,5 @@
 const { config } = require("dotenv");
-var { expressjwt: jwt } = require("express-jwt");
+const { expressjwt: jwt } = require("express-jwt");
 const { jwtDecode } = require("jwt-decode");
 
 config();
@@ -7,23 +7,21 @@ config();
 const checkToken = jwt({
   secret: process.env.JWT_SECRET,
   algorithms: ["HS256"],
-  getToken: (req) => req.cookies.token,
+  getToken: (req) => {
+    const token = req.cookies.token;
+    console.log("getToken called for requireAuth. Cookie token value:", token); // Log actual token value
+    return token;
+  },
 });
 
-const attachUser = (req, res, next) => {
-  const token = req.cookies.token;
+const requireAuth = jwt({
+  secret: process.env.JWT_SECRET,
+  algorithms: ["HS256"],
+  getToken: (req) => req.cookies.token,
+  requestProperty: "user",
+});
 
-  if (!token) {
-    return res.status(401).json({
-      message: "Authorization invalid",
-    });
-  }
-
-  const decodedToken = jwtDecode(token);
-  req.user = decodedToken;
-
-  next();
-};
+console.log(requireAuth);
 
 const checkAdmin = (req, res, next) => {
   const token = req.cookies.token;
@@ -36,8 +34,10 @@ const checkAdmin = (req, res, next) => {
   }
   next();
 };
+
 module.exports = {
   checkToken,
   checkAdmin,
-  attachUser,
+
+  requireAuth,
 };
