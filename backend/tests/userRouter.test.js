@@ -7,6 +7,7 @@ const userRouter = require("../routes/userRouter");
 const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use("/", userRouter);
+const authorizedUser = request.agent(app);
 
 const prisma = new PrismaClient();
 
@@ -111,16 +112,14 @@ describe("Test if Sign Up route works", () => {
 });
 
 describe("Test if Log In Route works", () => {
-  it("logging in works, and checks if the set-cookie is present", (done) => {
-    request(app)
+  it("logging in works, and checks if the set-cookie is present", async () => {
+    const res = await authorizedUser
       .post("/log-in")
       .type("form")
       .send({ email: "tes@test.com", password: "Test1234!" })
-      .expect(200)
-      .then((res) => {
-        expect(res.headers).toHaveProperty("set-cookie");
-        done();
-      });
+      .expect(200);
+
+    expect(res.headers).toHaveProperty("set-cookie");
   });
 
   it("403 error if logging in credentials are wrong", (done) => {
