@@ -16,6 +16,8 @@ const prisma = new PrismaClient({
   },
 });
 
+// user controller queries
+
 const findUser = async (email) => {
   return await prisma.user.findUnique({
     where: {
@@ -75,9 +77,53 @@ const getProfiles = async (userId) => {
   }
 };
 
+const deleteProfile = async (userId) => {
+  try {
+    return await prisma.user.delete({
+      where: {
+        id: userId,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    return err;
+  }
+};
+
+const updateProfile = async (
+  first_name,
+  last_name,
+  email,
+  password,
+  userId
+) => {
+  try {
+    return await prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        email: email,
+        password: password,
+        profile: {
+          update: {
+            firstName: first_name,
+            lastName: last_name,
+          },
+        },
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    return err;
+  }
+};
+
 module.exports = {
   findUser,
   createUser,
   getProfile,
   getProfiles,
+  deleteProfile,
+  updateProfile,
 };
