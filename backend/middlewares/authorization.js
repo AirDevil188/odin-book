@@ -21,8 +21,6 @@ const requireAuth = jwt({
   requestProperty: "user",
 });
 
-console.log(requireAuth);
-
 const checkAdmin = (req, res, next) => {
   const token = req.cookies.token;
 
