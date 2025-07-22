@@ -10,6 +10,7 @@ const port = process.env.PORT;
 const app = express();
 
 const userRouter = require("./routes/userRouter");
+const profileRouter = require("./routes/profileRouter");
 const { attachUser } = require("./middlewares/authorization");
 
 app.use(cors({ origin: "http//:localhost:3000" }));
@@ -19,7 +20,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.use("/", userRouter);
-app.use(attachUser);
+app.use("/profiles", profileRouter);
 
 helmet.contentSecurityPolicy({
   directives: {
