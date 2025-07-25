@@ -11,7 +11,6 @@ const app = express();
 
 const userRouter = require("./routes/userRouter");
 const profileRouter = require("./routes/profileRouter");
-const { attachUser } = require("./middlewares/authorization");
 
 app.use(cors({ origin: "http//:localhost:3000" }));
 app.use(helmet());
