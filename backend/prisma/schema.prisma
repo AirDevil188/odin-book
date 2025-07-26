@@ -13,6 +13,12 @@ enum Role {
   admin
 }
 
+enum FriendRequestStatus {
+  pending
+  accepted
+  declined
+}
+
 model User {
   id       String   @id @default(ulid())
   email    String   @unique
@@ -24,20 +30,21 @@ model User {
 }
 
 model Profile {
-  id             String            @id @default(uuid())
-  firstName      String            @map("first_name")
-  lastName       String            @map("last_name")
-  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId         String            @unique
-  avatar         String?
-  friends        FriendshipUsers[]
-  posts          Post[]
-  comments       Comment[]
-  likedPosts     LikedPosts[]
-  likedComments  LikedComments[]
-  friendRequests FriendRequests[]
-  chats          Chat[]
-  messages       Message[]
+  id                     String            @id @default(uuid())
+  firstName              String            @map("first_name")
+  lastName               String            @map("last_name")
+  user                   User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId                 String            @unique
+  avatar                 String?
+  friends                FriendshipUsers[]
+  posts                  Post[]
+  comments               Comment[]
+  likedPosts             LikedPosts[]
+  likedComments          LikedComments[]
+  sentFriendRequests     FriendRequests[]  @relation("SentRequests")
+  receivedFriendRequests FriendRequests[]  @relation("ReceivedRequests")
+  chats                  Chat[]
+  messages               Message[]
 
   @@map("profiles")
 }
@@ -50,14 +57,6 @@ model Friend {
   @@map("friends")
 }
 
-model FriendRequest {
-  id        String           @id @default(uuid())
-  requestId String
-  requests  FriendRequests[]
-
-  @@map("friend_request")
-}
-
 model FriendshipUsers {
   user     Profile @relation(fields: [userId], references: [id])
   userId   String
@@ -68,12 +67,14 @@ model FriendshipUsers {
 }
 
 model FriendRequests {
-  user         Profile       @relation(fields: [userId], references: [id])
-  userId       String
-  request      FriendRequest @relation(fields: [secondUserId], references: [id])
-  secondUserId String
+  senderId   String
+  sender     Profile             @relation("SentRequests", fields: [senderId], references: [userId])
+  receiverId String
+  receiver   Profile             @relation("ReceivedRequests", fields: [receiverId], references: [userId])
+  status     FriendRequestStatus @default(pending)
+  createdAt  DateTime            @default(now())
 
-  @@id([userId, secondUserId])
+  @@unique([senderId, receiverId])
   @@map("friend_requests")
 }
 
