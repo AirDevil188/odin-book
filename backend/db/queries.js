@@ -143,6 +143,7 @@ const deleteFriendRequest = async (receiverId, userId) => {
           senderId: userId,
           receiverId: receiverId,
         },
+        status: "declined",
       },
     });
   } catch (err) {
