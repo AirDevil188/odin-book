@@ -5,7 +5,7 @@ const { requireAuth } = require("../middlewares/authorization");
 
 const profileRouter = Router();
 
-profileRouter.get("/", profileController.getProfiles);
+profileRouter.get("/", requireAuth, profileController.getProfiles);
 
 profileRouter.get("/profile", requireAuth, profileController.getProfile);
 
