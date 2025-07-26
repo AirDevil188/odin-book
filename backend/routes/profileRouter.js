@@ -1,6 +1,7 @@
 const { Router } = require("express");
 
 const profileController = require("../controllers/profileController");
+const friendController = require("../controllers/friendController");
 const { requireAuth } = require("../middlewares/authorization");
 
 const profileRouter = Router();
@@ -19,6 +20,14 @@ profileRouter.delete(
   "/profile/delete",
   requireAuth,
   profileController.deleteProfile
+);
+
+// friend routes
+
+profileRouter.post(
+  "/profile/friend-requests",
+  requireAuth,
+  friendController.createFriendRequest
 );
 
 module.exports = profileRouter;
