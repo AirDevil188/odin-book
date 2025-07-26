@@ -119,6 +119,38 @@ const updateProfile = async (
   }
 };
 
+// friends controller queries
+
+const createFriendRequest = async (receiverId, userId) => {
+  try {
+    return await prisma.friendRequests.create({
+      data: {
+        receiverId: receiverId,
+        senderId: userId,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    return err;
+  }
+};
+
+const deleteFriendRequest = async (receiverId, userId) => {
+  try {
+    return await prisma.friendRequests.delete({
+      where: {
+        senderId_receiverId: {
+          senderId: userId,
+          receiverId: receiverId,
+        },
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    return err;
+  }
+};
+
 module.exports = {
   findUser,
   createUser,
@@ -126,4 +158,6 @@ module.exports = {
   getProfiles,
   deleteProfile,
   updateProfile,
+  createFriendRequest,
+  deleteFriendRequest,
 };
