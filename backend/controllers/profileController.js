@@ -12,7 +12,7 @@ const getProfile = async (req, res, next) => {
 const getProfiles = async (req, res, next) => {
   const { id } = req.user;
   const profiles = await db.getProfiles(id);
-  return res.status(200).json(profiles);
+  return res.status(200).json({ profiles: profiles });
 };
 
 const deleteProfile = async (req, res, next) => {
