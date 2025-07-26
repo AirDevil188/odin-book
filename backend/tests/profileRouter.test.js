@@ -64,6 +64,33 @@ describe("Profile router functionality", () => {
     await prisma.$disconnect();
   });
 
+  it("should receive user profiles", async () => {
+    await prisma.user.create({
+      data: {
+        email: "testing@email.com",
+        password: hashedPassword,
+        profile: {
+          create: {
+            firstName: "Jack",
+            lastName: "Sparrow",
+          },
+        },
+      },
+    });
+    await authorizedUser
+      .post("/log-in")
+      .send({ email: testEmail, password: testPassword })
+      .expect(200);
+
+    const res = await authorizedUser.get("/profiles").expect(200);
+
+    expect(res.body.profiles[0]).toHaveProperty("id");
+    expect(res.body.profiles[0]).toHaveProperty("firstName", "Jack");
+    expect(res.body.profiles[0]).toHaveProperty("lastName", "Sparrow");
+    expect(res.body.profiles[0]).toHaveProperty("userId");
+    expect(res.body.profiles[0]).toHaveProperty("avatar");
+  });
+
   it("should receive authorized user profile", async () => {
     await authorizedUser
       .post("/log-in")
