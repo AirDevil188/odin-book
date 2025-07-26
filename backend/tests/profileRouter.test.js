@@ -1,44 +1,144 @@
 const express = require("express");
 const request = require("supertest");
-
 const { PrismaClient } = require("@prisma/client");
+const { config } = require("dotenv");
+const cookieParser = require("cookie-parser");
+const { createHashedPassword } = require("../utils/utils");
+config();
+
+process.env.NODE_ENV = "TEST";
+
+const db = require("../db/queries");
 
 const app = express();
 const userRouter = require("../routes/userRouter");
 const profileRouter = require("../routes/profileRouter");
-const cookieParser = require("cookie-parser");
-
-let authorizedUser;
-beforeAll(async () => {
-  authorizedUser = request.agent(app);
-});
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.use("/", userRouter);
-
 app.use("/profiles", profileRouter);
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.TEST_DATABASE_URL,
+    },
+  },
+});
 
-describe("Check if Profile Router works", () => {
-  it("logging in works, and checks if the set-cookie is present", async () => {
-    const res = await authorizedUser
+describe("Profile router functionality", () => {
+  let authorizedUser;
+  const testEmail = "tes@test.com";
+  const testPassword = "Test1234!";
+  let hashedPassword;
+
+  beforeAll(async () => {
+    hashedPassword = await createHashedPassword(testPassword);
+  });
+
+  beforeEach(async () => {
+    await prisma.profile.deleteMany({});
+    await prisma.user.deleteMany({});
+
+    await prisma.user.create({
+      data: {
+        email: testEmail,
+        password: hashedPassword,
+        profile: {
+          create: {
+            firstName: "Test",
+            lastName: "Test",
+            avatar: null,
+          },
+        },
+      },
+    });
+  });
+
+  authorizedUser = request.agent(app);
+
+  afterAll(async () => {
+    await prisma.$disconnect();
+  });
+
+  it("should receive authorized user profile", async () => {
+    await authorizedUser
       .post("/log-in")
-      .send({ email: "tes@test.com", password: "Test1234!" })
+      .send({ email: testEmail, password: testPassword })
       .expect(200);
-    expect(res.headers).toHaveProperty("set-cookie");
-  });
 
-  it("Check if GET user profile works", async () => {
     const res = await authorizedUser.get("/profiles/profile").expect(200);
+
+    expect(res.body).toHaveProperty("id");
+    expect(res.body).toHaveProperty("firstName", "Test");
+    expect(res.body).toHaveProperty("lastName", "Test");
+    expect(res.body).toHaveProperty("userId");
+    expect(res.body).toHaveProperty("avatar");
+  });
+  it("should return Wrong Password for incorrect password input", async () => {
+    await authorizedUser
+      .post("/log-in")
+      .send({
+        email: testEmail,
+        password: testPassword,
+      })
+      .expect(200);
+
+    const res = await authorizedUser
+      .put("/profiles/profile/update")
+      .send({
+        password: "New1234!",
+      })
+      .expect(403);
+
+    expect(res.body).toHaveProperty("message", "Wrong Password");
   });
 
-  it("Check if delete method works", async () => {
+  it("should update user profile with new data", async () => {
+    await authorizedUser
+      .post("/log-in")
+      .send({
+        email: testEmail,
+        password: testPassword,
+      })
+      .expect(200);
+
+    const newEmail = "new@email.com";
+    const newPassword = "New1234!";
+
+    const res = await authorizedUser
+      .put("/profiles/profile/update")
+      .send({
+        email: newEmail,
+        password: testPassword,
+        new_password: newPassword,
+        first_name: "John",
+        last_name: "Shepard",
+      })
+      .expect(200);
+
+    expect(res.body).toHaveProperty("message", "Profile updated successfully");
+    expect(res.body.profile).toHaveProperty("id");
+    expect(res.body.profile).toHaveProperty("role", "user");
+    expect(res.body.profile).toHaveProperty("email", "new@email.com");
+  });
+
+  it("should delete user profile", async () => {
+    await authorizedUser
+      .post("/log-in")
+      .send({
+        email: testEmail,
+        password: testPassword,
+      })
+      .expect(200);
+
     const res = await authorizedUser
       .delete("/profiles/profile/delete")
       .expect(200);
+
+    expect(res.body).toHaveProperty("message", "Profile deleted successfully");
   });
 });

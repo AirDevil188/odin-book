@@ -9,6 +9,12 @@ profileRouter.get("/", profileController.getProfiles);
 
 profileRouter.get("/profile", requireAuth, profileController.getProfile);
 
+profileRouter.put(
+  "/profile/update",
+  requireAuth,
+  profileController.updateProfile
+);
+
 profileRouter.delete(
   "/profile/delete",
   requireAuth,
