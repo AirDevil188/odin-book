@@ -50,14 +50,14 @@ model Friendship {
 }
 
 model FriendRequests {
-  createdAt  DateTime            @default(now())
-  receiverId String
-  senderId   String
-  status     FriendRequestStatus @default(pending)
-  receiver   Profile             @relation("ReceivedRequests", fields: [receiverId], references: [userId])
-  sender     Profile             @relation("SentRequests", fields: [senderId], references: [userId])
+  createdAt   DateTime            @default(now())
+  receiverId  String
+  requesterId String
+  status      FriendRequestStatus @default(pending)
+  receiver    Profile             @relation("ReceivedRequests", fields: [receiverId], references: [userId])
+  sender      Profile             @relation("SentRequests", fields: [requesterId], references: [userId])
 
-  @@unique([senderId, receiverId])
+  @@unique([requesterId, receiverId])
   @@map("friend_requests")
 }
 
