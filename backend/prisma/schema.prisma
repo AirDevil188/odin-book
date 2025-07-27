@@ -42,8 +42,8 @@ model Friendship {
   id       String  @id @default(uuid())
   friendId String
   userId   String
-  friend   Profile @relation("FriendUser", fields: [friendId], references: [userId])
-  user     Profile @relation("UserFriend", fields: [userId], references: [userId])
+  friend   Profile @relation("FriendUser", fields: [friendId], references: [userId], onDelete: Cascade)
+  user     Profile @relation("UserFriend", fields: [userId], references: [userId], onDelete: Cascade)
 
   @@unique([userId, friendId])
   @@map("friends")
@@ -54,8 +54,8 @@ model FriendRequests {
   receiverId  String
   requesterId String
   status      FriendRequestStatus @default(pending)
-  receiver    Profile             @relation("ReceivedRequests", fields: [receiverId], references: [userId])
-  sender      Profile             @relation("SentRequests", fields: [requesterId], references: [userId])
+  receiver    Profile             @relation("ReceivedRequests", fields: [receiverId], references: [userId], onDelete: Cascade)
+  sender      Profile             @relation("SentRequests", fields: [requesterId], references: [userId], onDelete: Cascade)
 
   @@unique([requesterId, receiverId])
   @@map("friend_requests")
