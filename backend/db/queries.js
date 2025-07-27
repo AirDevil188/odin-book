@@ -121,12 +121,12 @@ const updateProfile = async (
 
 // friends controller queries
 
-const createFriendRequest = async (receiverId, userId) => {
+const getFriendRequests = async (userId) => {
   try {
-    return await prisma.friendRequests.create({
-      data: {
-        receiverId: receiverId,
-        senderId: userId,
+    return await prisma.friendRequests.findMany({
+      where: {
+        receiverId: userId,
+        status: "pending",
       },
     });
   } catch (err) {
@@ -135,17 +135,68 @@ const createFriendRequest = async (receiverId, userId) => {
   }
 };
 
-const deleteFriendRequest = async (receiverId, userId) => {
+const createFriendRequest = async (requesterId, receiverId) => {
+  try {
+    return await prisma.friendRequests.create({
+      data: {
+        receiverId: receiverId,
+        requesterId: requesterId,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    return err;
+  }
+};
+
+const deleteFriendRequest = async (receiverId, requesterId) => {
   try {
     return await prisma.friendRequests.delete({
       where: {
-        senderId_receiverId: {
-          senderId: userId,
+        requesterId_receiverId: {
           receiverId: receiverId,
+          requesterId: requesterId,
         },
-        status: "declined",
+        status: "pending",
       },
     });
+  } catch (err) {
+    console.log(err);
+    return err;
+  }
+};
+
+const acceptFriendRequest = async (accepterId, requesterId) => {
+  console.log({ requester: requesterId, receiverId: accepterId });
+  try {
+    const [updatedFriendRequest, friendship1, friendship2] =
+      await prisma.$transaction([
+        prisma.friendRequests.update({
+          where: {
+            requesterId_receiverId: {
+              requesterId: requesterId,
+              receiverId: accepterId,
+            },
+            status: "pending",
+          },
+          data: {
+            status: "accepted",
+          },
+        }),
+        prisma.friendship.create({
+          data: {
+            userId: accepterId,
+            friendId: requesterId,
+          },
+        }),
+        prisma.friendship.create({
+          data: {
+            userId: requesterId,
+            friendId: accepterId,
+          },
+        }),
+      ]);
+    return { updatedFriendRequest, friendship1, friendship2 };
   } catch (err) {
     console.log(err);
     return err;
@@ -159,6 +210,8 @@ module.exports = {
   getProfiles,
   deleteProfile,
   updateProfile,
+  getFriendRequests,
   createFriendRequest,
   deleteFriendRequest,
+  acceptFriendRequest,
 };

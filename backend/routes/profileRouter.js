@@ -24,10 +24,28 @@ profileRouter.delete(
 
 // friend routes
 
-profileRouter.post(
+profileRouter.get(
   "/profile/friend-requests",
   requireAuth,
+  friendController.getFriendRequests
+);
+
+profileRouter.post(
+  "/profile/friend-requests/:receiverId/new",
+  requireAuth,
   friendController.createFriendRequest
+);
+
+profileRouter.delete(
+  "/profile/friend-requests/:receiverId/delete",
+  requireAuth,
+  friendController.deleteFriendRequest
+);
+
+profileRouter.post(
+  "/profile/friend-requests/:receiverId/accept",
+  requireAuth,
+  friendController.acceptFriendRequest
 );
 
 module.exports = profileRouter;
