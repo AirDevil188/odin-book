@@ -19,11 +19,16 @@ const prisma = new PrismaClient({
 // user controller queries
 
 const findUser = async (email) => {
-  return await prisma.user.findUnique({
-    where: {
-      email: email,
-    },
-  });
+  try {
+    return await prisma.user.findUnique({
+      where: {
+        email: email,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
 };
 
 const createUser = async (email, password, first_name, last_name, avatar) => {
@@ -43,7 +48,7 @@ const createUser = async (email, password, first_name, last_name, avatar) => {
     });
   } catch (err) {
     console.log(err);
-    return err;
+    throw err;
   }
 };
 
@@ -58,7 +63,7 @@ const getProfile = async (userId) => {
     });
   } catch (err) {
     console.log(err);
-    return err;
+    throw err;
   }
 };
 
@@ -73,7 +78,7 @@ const getProfiles = async (userId) => {
     });
   } catch (err) {
     console.log(err);
-    return err;
+    throw err;
   }
 };
 
@@ -86,7 +91,7 @@ const deleteProfile = async (userId) => {
     });
   } catch (err) {
     console.log(err);
-    return err;
+    throw err;
   }
 };
 
@@ -115,7 +120,7 @@ const updateProfile = async (
     });
   } catch (err) {
     console.log(err);
-    return err;
+    throw err;
   }
 };
 
@@ -131,7 +136,7 @@ const getFriendRequests = async (userId) => {
     });
   } catch (err) {
     console.log(err);
-    return err;
+    throw err;
   }
 };
 
@@ -145,7 +150,7 @@ const createFriendRequest = async (requesterId, receiverId) => {
     });
   } catch (err) {
     console.log(err);
-    return err;
+    throw err;
   }
 };
 
@@ -162,7 +167,7 @@ const deleteFriendRequest = async (receiverId, requesterId) => {
     });
   } catch (err) {
     console.log(err);
-    return err;
+    throw err;
   }
 };
 
@@ -199,7 +204,7 @@ const acceptFriendRequest = async (accepterId, requesterId) => {
     return { updatedFriendRequest, friendship1, friendship2 };
   } catch (err) {
     console.log(err);
-    return err;
+    throw err;
   }
 };
 
