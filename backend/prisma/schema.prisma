@@ -7,6 +7,123 @@ datasource db {
   url      = env("TEST_DATABASE_URL")
 }
 
+model User {
+  id       String   @id @default(ulid())
+  email    String   @unique
+  password String
+  role     Role     @default(user)
+  profile  Profile?
+
+  @@map("users")
+}
+
+model Profile {
+  id                     String           @id @default(uuid())
+  firstName              String           @map("first_name")
+  lastName               String           @map("last_name")
+  userId                 String           @unique
+  avatar                 String?
+  comments               Comment[]
+  receivedFriendRequests FriendRequests[] @relation("ReceivedRequests")
+  sentFriendRequests     FriendRequests[] @relation("SentRequests")
+  friendsWith            Friendship[]     @relation("FriendUser")
+  friendsOf              Friendship[]     @relation("UserFriend")
+  likedComments          LikedComments[]
+  likedPosts             LikedPosts[]
+  messages               Message[]
+  posts                  Post[]
+  user                   User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chats                  Chat[]           @relation("ChatToProfile")
+
+  @@map("profiles")
+}
+
+model Friendship {
+  id       String  @id @default(uuid())
+  friendId String
+  userId   String
+  friend   Profile @relation("FriendUser", fields: [friendId], references: [userId])
+  user     Profile @relation("UserFriend", fields: [userId], references: [userId])
+
+  @@map("friends")
+}
+
+model FriendRequests {
+  createdAt  DateTime            @default(now())
+  receiverId String
+  senderId   String
+  status     FriendRequestStatus @default(pending)
+  receiver   Profile             @relation("ReceivedRequests", fields: [receiverId], references: [userId])
+  sender     Profile             @relation("SentRequests", fields: [senderId], references: [userId])
+
+  @@unique([senderId, receiverId])
+  @@map("friend_requests")
+}
+
+model Post {
+  id        String       @id @default(ulid())
+  text      String
+  authorId  String
+  timestamp DateTime     @default(now())
+  likes     Int          @default(0)
+  likedBy   LikedPosts[]
+  author    Profile      @relation(fields: [authorId], references: [id])
+
+  @@map("posts")
+}
+
+model LikedPosts {
+  userId String
+  postId String
+  post   Post    @relation(fields: [postId], references: [id])
+  user   Profile @relation(fields: [userId], references: [id])
+
+  @@id([userId, postId])
+  @@map("liked_posts")
+}
+
+model Comment {
+  id        String          @id @default(uuid())
+  text      String
+  timestamp DateTime        @default(now())
+  authorId  String
+  likes     Int             @default(0)
+  author    Profile         @relation(fields: [authorId], references: [id])
+  likedBy   LikedComments[]
+
+  @@map("comments")
+}
+
+model LikedComments {
+  userId    String
+  commentId String
+  comment   Comment @relation(fields: [commentId], references: [id])
+  user      Profile @relation(fields: [userId], references: [id])
+
+  @@id([userId, commentId])
+  @@map("liked_comments")
+}
+
+model Chat {
+  id       String    @id @default(uuid())
+  messages Message[]
+  users    Profile[] @relation("ChatToProfile")
+
+  @@map("chats")
+}
+
+model Message {
+  id         String   @id @default(uuid())
+  text       String
+  timestamp  DateTime @default(now())
+  chatroomId String
+  userId     String
+  chats      Chat     @relation(fields: [chatroomId], references: [id])
+  user       Profile  @relation(fields: [userId], references: [id])
+
+  @@map("messages")
+}
+
 enum Role {
   user
   moderator
@@ -17,127 +134,4 @@ enum FriendRequestStatus {
   pending
   accepted
   declined
-}
-
-model User {
-  id       String   @id @default(ulid())
-  email    String   @unique
-  password String
-  profile  Profile?
-  role     Role     @default(user)
-
-  @@map("users")
-}
-
-model Profile {
-  id                     String            @id @default(uuid())
-  firstName              String            @map("first_name")
-  lastName               String            @map("last_name")
-  user                   User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId                 String            @unique
-  avatar                 String?
-  friends                FriendshipUsers[]
-  posts                  Post[]
-  comments               Comment[]
-  likedPosts             LikedPosts[]
-  likedComments          LikedComments[]
-  sentFriendRequests     FriendRequests[]  @relation("SentRequests")
-  receivedFriendRequests FriendRequests[]  @relation("ReceivedRequests")
-  chats                  Chat[]
-  messages               Message[]
-
-  @@map("profiles")
-}
-
-model Friend {
-  id       String            @id @default(uuid())
-  friendId String
-  friends  FriendshipUsers[]
-
-  @@map("friends")
-}
-
-model FriendshipUsers {
-  user     Profile @relation(fields: [userId], references: [id])
-  userId   String
-  friend   Friend  @relation(fields: [friendId], references: [id])
-  friendId String
-
-  @@id([userId, friendId])
-}
-
-model FriendRequests {
-  senderId   String
-  sender     Profile             @relation("SentRequests", fields: [senderId], references: [userId])
-  receiverId String
-  receiver   Profile             @relation("ReceivedRequests", fields: [receiverId], references: [userId])
-  status     FriendRequestStatus @default(pending)
-  createdAt  DateTime            @default(now())
-
-  @@unique([senderId, receiverId])
-  @@map("friend_requests")
-}
-
-model Post {
-  id        String       @id @default(ulid())
-  text      String
-  author    Profile      @relation(fields: [authorId], references: [id])
-  authorId  String
-  timestamp DateTime     @default(now())
-  likes     Int          @default(0)
-  likedBy   LikedPosts[]
-
-  @@map("posts")
-}
-
-model LikedPosts {
-  user   Profile @relation(fields: [userId], references: [id])
-  userId String
-  post   Post    @relation(fields: [postId], references: [id])
-  postId String
-
-  @@id([userId, postId])
-  @@map("liked_posts")
-}
-
-model Comment {
-  id        String          @id @default(uuid())
-  text      String
-  timestamp DateTime        @default(now())
-  author    Profile         @relation(fields: [authorId], references: [id])
-  authorId  String
-  likes     Int             @default(0)
-  likedBy   LikedComments[]
-
-  @@map("comments")
-}
-
-model LikedComments {
-  user      Profile @relation(fields: [userId], references: [id])
-  userId    String
-  comment   Comment @relation(fields: [commentId], references: [id])
-  commentId String
-
-  @@id([userId, commentId])
-  @@map("liked_comments")
-}
-
-model Chat {
-  id       String    @id @default(uuid())
-  users    Profile[]
-  messages Message[]
-
-  @@map("chats")
-}
-
-model Message {
-  id         String   @id @default(uuid())
-  text       String
-  timestamp  DateTime @default(now())
-  chats      Chat     @relation(fields: [chatroomId], references: [id])
-  chatroomId String
-  user       Profile  @relation(fields: [userId], references: [id])
-  userId     String
-
-  @@map("messages")
 }
