@@ -31,7 +31,7 @@ model Profile {
   likedComments          LikedComments[]
   likedPosts             LikedPosts[]
   messages               Message[]
-  posts                  Post[]
+  posts                  Post[]           @relation("AuthorPosts")
   user                   User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   chats                  Chat[]           @relation("ChatToProfile")
 
@@ -65,10 +65,12 @@ model Post {
   id        String       @id @default(ulid())
   text      String
   authorId  String
-  timestamp DateTime     @default(now())
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
   likes     Int          @default(0)
-  likedBy   LikedPosts[]
-  author    Profile      @relation(fields: [authorId], references: [id])
+  likedBy   LikedPosts[] @relation("PostLikedBy")
+  author    Profile      @relation("AuthorPosts", fields: [authorId], references: [id])
+  comments  Comment[]
 
   @@map("posts")
 }
@@ -76,10 +78,10 @@ model Post {
 model LikedPosts {
   userId String
   postId String
-  post   Post    @relation(fields: [postId], references: [id])
+  post   Post    @relation("PostLikedBy", fields: [postId], references: [id])
   user   Profile @relation(fields: [userId], references: [id])
 
-  @@id([userId, postId])
+  @@unique([userId, postId])
   @@map("liked_posts")
 }
 
@@ -90,7 +92,9 @@ model Comment {
   authorId  String
   likes     Int             @default(0)
   author    Profile         @relation(fields: [authorId], references: [id])
-  likedBy   LikedComments[]
+  likedBy   LikedComments[] @relation("CommentLikedBy")
+  postId    String
+  post      Post            @relation(fields: [postId], references: [id])
 
   @@map("comments")
 }
@@ -98,10 +102,10 @@ model Comment {
 model LikedComments {
   userId    String
   commentId String
-  comment   Comment @relation(fields: [commentId], references: [id])
+  comment   Comment @relation("CommentLikedBy", fields: [commentId], references: [id])
   user      Profile @relation(fields: [userId], references: [id])
 
-  @@id([userId, commentId])
+  @@unique([userId, commentId])
   @@map("liked_comments")
 }
 
