@@ -32,6 +32,7 @@ const prisma = new PrismaClient({
 describe("Profile router functionality", () => {
   let authorizedUser;
   const testEmail = "tes@test.com";
+  const testEmail2 = "tes2@test.com";
   const testPassword = "Test1234!";
   let hashedPassword;
 
@@ -40,6 +41,8 @@ describe("Profile router functionality", () => {
   });
 
   beforeEach(async () => {
+    await prisma.friendship.deleteMany({});
+    await prisma.friendRequests.deleteMany({});
     await prisma.profile.deleteMany({});
     await prisma.user.deleteMany({});
 
@@ -167,5 +170,144 @@ describe("Profile router functionality", () => {
       .expect(200);
 
     expect(res.body).toHaveProperty("message", "Profile deleted successfully");
+  });
+
+  it("should create new friend request", async () => {
+    const testingUser2 = await prisma.user.create({
+      data: {
+        email: testEmail2,
+        password: hashedPassword,
+        profile: {
+          create: {
+            firstName: "Test",
+            lastName: "Test",
+            avatar: null,
+          },
+        },
+      },
+    });
+    const receiverId = testingUser2.id;
+
+    await authorizedUser
+      .post("/log-in")
+      .send({
+        email: testEmail,
+        password: testPassword,
+      })
+      .expect(200);
+
+    const res = await authorizedUser
+      .post(`/profiles/profile/friend-requests/${receiverId}/new`)
+      .send({
+        receiverId: receiverId,
+      })
+      .expect(200);
+
+    expect(res.body).toHaveProperty(
+      "message",
+      "Friend request created successfully"
+    );
+    expect(res.body.friendRequest).toHaveProperty("createdAt");
+    expect(res.body.friendRequest).toHaveProperty("requesterId");
+    expect(res.body.friendRequest).toHaveProperty(
+      "receiverId",
+      testingUser2.id
+    );
+    expect(res.body.friendRequest).toHaveProperty("status", "pending");
+  });
+
+  it("should get friend requests from authorized user", async () => {
+    const testingUser2 = await prisma.user.create({
+      data: {
+        email: testEmail2,
+        password: hashedPassword,
+        profile: {
+          create: {
+            firstName: "Test",
+            lastName: "Test",
+            avatar: null,
+          },
+        },
+      },
+    });
+    const receiverId = testingUser2.id;
+
+    await authorizedUser
+      .post("/log-in")
+      .send({
+        email: "tes2@test.com",
+        password: "Test1234!",
+      })
+      .expect(200);
+
+    await authorizedUser
+      .post(`/profiles/profile/friend-requests/${receiverId}/new`)
+      .send({
+        receiverId: receiverId,
+      })
+      .expect(200);
+
+    const res = await authorizedUser
+      .get("/profiles/profile/friend-requests")
+      .expect(200);
+
+    expect(res.body).toHaveProperty(
+      "message",
+      "Friend requests fetched successfully"
+    );
+    expect(res.body.friendRequests[0]).toHaveProperty("createdAt");
+    expect(res.body.friendRequests[0]).toHaveProperty("receiverId", receiverId);
+    expect(res.body.friendRequests[0]).toHaveProperty("status", "pending");
+    expect(res.body.friendRequests).toHaveLength(1);
+  });
+
+  it("should delete friend request", async () => {
+    const testingUser2 = await prisma.user.create({
+      data: {
+        email: testEmail2,
+        password: hashedPassword,
+        profile: {
+          create: {
+            firstName: "Test",
+            lastName: "Test",
+            avatar: null,
+          },
+        },
+      },
+    });
+    const receiverId = testingUser2.id;
+    await authorizedUser
+      .post("/log-in")
+      .send({
+        email: testEmail,
+        password: testPassword,
+      })
+      .expect(200);
+
+    await authorizedUser
+      .post(`/profiles/profile/friend-requests/${receiverId}/new`)
+      .send({
+        receiverId: receiverId,
+      })
+      .expect(200);
+
+    const res = await authorizedUser
+      .delete(`/profiles/profile/friend-requests/${receiverId}/delete`)
+      .send({
+        receiverId: receiverId,
+      })
+      .expect(200);
+
+    expect(res.body).toHaveProperty(
+      "message",
+      "Friend request deleted successfully"
+    );
+    expect(res.body.friendRequest).toHaveProperty("createdAt");
+    expect(res.body.friendRequest).toHaveProperty("requesterId");
+    expect(res.body.friendRequest).toHaveProperty(
+      "receiverId",
+      testingUser2.id
+    );
+    expect(res.body.friendRequest).toHaveProperty("status", "pending");
   });
 });
