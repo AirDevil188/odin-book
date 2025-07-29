@@ -52,6 +52,63 @@ const createUser = async (email, password, first_name, last_name, avatar) => {
   }
 };
 
+// admin controller queries
+
+const deleteUser = async (userId) => {
+  try {
+    return await prisma.user.delete({
+      where: {
+        id: userId,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
+const updateRole = async (userId, role) => {
+  try {
+    return prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        role: role,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
+const deletePost = async (postId) => {
+  try {
+    return prisma.post.delete({
+      where: {
+        id: postId,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
+const deleteComment = async (commentId) => {
+  try {
+    return await prisma.comment.delete({
+      where: {
+        id: commentId,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
 // profile controller queries
 
 const getProfile = async (userId) => {
@@ -235,6 +292,10 @@ const deleteFriend = async (userId, friendId) => {
 };
 
 module.exports = {
+  deleteUser,
+  updateRole,
+  deletePost,
+  deleteComment,
   findUser,
   createUser,
   getProfile,
