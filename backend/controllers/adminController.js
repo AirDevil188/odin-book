@@ -8,7 +8,7 @@ const deleteUser = async (req, res, next) => {
   const { userId } = req.params;
 
   try {
-    const user = await db.deleteUser(userId);
+    const user = await db.adminDeleteUser(userId);
     return res.status(200).json({
       message: "User is deleted",
       user: user,
@@ -26,7 +26,7 @@ const updateRole = async (req, res, next) => {
   const { role } = req.body;
 
   try {
-    const user = await db.updateRole(userId, role);
+    const user = await db.adminUpdateRole(userId, role);
     return res.status(200).json({
       message: "User role updated successfully",
       user: user,

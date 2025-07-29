@@ -54,7 +54,7 @@ const createUser = async (email, password, first_name, last_name, avatar) => {
 
 // admin controller queries
 
-const deleteUser = async (userId) => {
+const adminDeleteUser = async (userId) => {
   try {
     return await prisma.user.delete({
       where: {
@@ -67,7 +67,7 @@ const deleteUser = async (userId) => {
   }
 };
 
-const updateRole = async (userId, role) => {
+const adminUpdateRole = async (userId, role) => {
   try {
     return prisma.user.update({
       where: {
@@ -83,7 +83,7 @@ const updateRole = async (userId, role) => {
   }
 };
 
-const deletePost = async (postId) => {
+const adminDeletePost = async (postId) => {
   try {
     return prisma.post.delete({
       where: {
@@ -96,7 +96,7 @@ const deletePost = async (postId) => {
   }
 };
 
-const deleteComment = async (commentId) => {
+const adminDeleteComment = async (commentId) => {
   try {
     return await prisma.comment.delete({
       where: {
@@ -292,10 +292,10 @@ const deleteFriend = async (userId, friendId) => {
 };
 
 module.exports = {
-  deleteUser,
-  updateRole,
-  deletePost,
-  deleteComment,
+  adminDeleteUser,
+  adminUpdateRole,
+  adminDeletePost,
+  adminDeleteComment,
   findUser,
   createUser,
   getProfile,
