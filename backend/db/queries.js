@@ -172,7 +172,6 @@ const deleteFriendRequest = async (receiverId, requesterId) => {
 };
 
 const acceptFriendRequest = async (accepterId, requesterId) => {
-  console.log({ requester: requesterId, receiverId: accepterId });
   try {
     const [updatedFriendRequest, friendship1, friendship2] =
       await prisma.$transaction([
