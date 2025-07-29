@@ -142,4 +142,44 @@ describe("Admin router functionality", () => {
     expect(res.body.user).toHaveProperty("id", userId);
     expect(res.body.user).toHaveProperty("email", "test@test.com");
   });
+
+  it("checks if the user role is updated", async () => {
+    const testingUser1 = await prisma.user.create({
+      data: {
+        email: "test@test.com",
+        password: hashedPassword,
+        profile: {
+          create: {
+            firstName: "Test",
+            lastName: "Test",
+          },
+        },
+      },
+    });
+    const userId = testingUser1.id;
+    const role = "admin";
+
+    await authorizedUser
+      .post("/log-in")
+      .send({
+        email: testEmail,
+        password: testPassword,
+      })
+      .expect(200);
+
+    const res = await authorizedUser
+      .put(`/admin/${userId}/role/update`)
+      .send({
+        role: role,
+      })
+      .expect(200);
+
+    expect(res.body).toHaveProperty(
+      "message",
+      "User role updated successfully"
+    );
+    expect(res.body.user).toHaveProperty("id", userId);
+    expect(res.body.user).toHaveProperty("email", "test@test.com");
+    expect(res.body.user).toHaveProperty("role", "admin");
+  });
 });

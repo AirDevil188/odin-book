@@ -14,12 +14,32 @@ const deleteUser = async (req, res, next) => {
       user: user,
     });
   } catch (err) {
+    console.log(err);
     return res.status(500).json({
       message: "There was a problem with your request to delete the user",
     });
   }
 };
 
+const updateRole = async (req, res, next) => {
+  const { userId } = req.params;
+  const { role } = req.body;
+
+  try {
+    const user = await db.updateRole(userId, role);
+    return res.status(200).json({
+      message: "User role updated successfully",
+      user: user,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      message: "There was a problem with your request to update user role",
+    });
+  }
+};
+
 module.exports = {
   deleteUser,
+  updateRole,
 };

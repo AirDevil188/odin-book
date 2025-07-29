@@ -12,4 +12,11 @@ adminRouter.delete(
   adminController.deleteUser
 );
 
+adminRouter.put(
+  "/:userId/role/update",
+  requireAuth,
+  checkAdmin,
+  adminController.updateRole
+);
+
 module.exports = adminRouter;
