@@ -14,8 +14,9 @@ const deleteUser = async (req, res, next) => {
       user: user,
     });
   } catch (err) {
-    console.log(err);
-    throw err;
+    return res.status(500).json({
+      message: "There was a problem with your request to delete the user",
+    });
   }
 };
 
