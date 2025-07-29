@@ -207,6 +207,33 @@ const acceptFriendRequest = async (accepterId, requesterId) => {
   }
 };
 
+const deleteFriend = async (userId, friendId) => {
+  try {
+    const [friendship1, friendship2] = await prisma.$transaction([
+      prisma.friendship.delete({
+        where: {
+          userId_friendId: {
+            friendId: friendId,
+            userId: userId,
+          },
+        },
+      }),
+      prisma.friendship.delete({
+        where: {
+          userId_friendId: {
+            friendId: userId,
+            userId: friendId,
+          },
+        },
+      }),
+    ]);
+    return { friendship1, friendship2 };
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
 module.exports = {
   findUser,
   createUser,
@@ -218,4 +245,5 @@ module.exports = {
   createFriendRequest,
   deleteFriendRequest,
   acceptFriendRequest,
+  deleteFriend,
 };

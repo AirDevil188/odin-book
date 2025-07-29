@@ -48,4 +48,10 @@ profileRouter.post(
   friendController.acceptFriendRequest
 );
 
+profileRouter.delete(
+  "/profile/friends/:friendId/delete",
+  requireAuth,
+  friendController.deleteFriend
+);
+
 module.exports = profileRouter;

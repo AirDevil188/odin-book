@@ -70,9 +70,28 @@ const acceptFriendRequest = async (req, res, next) => {
   }
 };
 
+const deleteFriend = async (req, res, next) => {
+  const { id } = req.user;
+  const { friendId } = req.body;
+
+  try {
+    const friend = await db.deleteFriend(id, friendId);
+    return res.status(200).json({
+      message: "Friendship deleted successfully",
+      friend: friend,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(400).json({
+      message: "There was a problem with deleting your friend request",
+    });
+  }
+};
+
 module.exports = {
   getFriendRequests,
   createFriendRequest,
   deleteFriendRequest,
   acceptFriendRequest,
+  deleteFriend,
 };
