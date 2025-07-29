@@ -43,7 +43,7 @@ profileRouter.delete(
 );
 
 profileRouter.post(
-  "/profile/friend-requests/:receiverId/accept",
+  "/profile/friend-requests/:requesterId/accept",
   requireAuth,
   friendController.acceptFriendRequest
 );

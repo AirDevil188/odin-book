@@ -19,7 +19,7 @@ const getFriendRequests = async (req, res, next) => {
 const createFriendRequest = async (req, res, next) => {
   const { id } = req.user;
 
-  const { receiverId } = req.body;
+  const { receiverId } = req.params;
 
   try {
     const friendRequest = await db.createFriendRequest(id, receiverId);
@@ -37,7 +37,7 @@ const createFriendRequest = async (req, res, next) => {
 
 const deleteFriendRequest = async (req, res, next) => {
   const { id } = req.user;
-  const { receiverId } = req.body;
+  const { receiverId } = req.params;
   try {
     const friendRequest = await db.deleteFriendRequest(receiverId, id);
     res.status(200).json({
@@ -54,7 +54,7 @@ const deleteFriendRequest = async (req, res, next) => {
 
 const acceptFriendRequest = async (req, res, next) => {
   const { id } = req.user;
-  const { requesterId } = req.body;
+  const { requesterId } = req.params;
 
   try {
     const friendRequest = await db.acceptFriendRequest(id, requesterId);
@@ -72,7 +72,7 @@ const acceptFriendRequest = async (req, res, next) => {
 
 const deleteFriend = async (req, res, next) => {
   const { id } = req.user;
-  const { friendId } = req.body;
+  const { friendId } = req.params;
 
   try {
     const friend = await db.deleteFriend(id, friendId);

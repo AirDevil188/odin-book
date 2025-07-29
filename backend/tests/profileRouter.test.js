@@ -352,9 +352,7 @@ describe("Profile router functionality", () => {
 
     await authorizedUser
       .post(`/profiles/profile/friend-requests/${receiverId}/new`)
-      .send({
-        receiverId: receiverId,
-      })
+
       .expect(200);
 
     await authorizedUser
@@ -363,8 +361,8 @@ describe("Profile router functionality", () => {
       .expect(200);
 
     const res = await authorizedUser
-      .post(`/profiles/profile/friend-requests/${receiverId}/accept`)
-      .send({ requesterId: requesterId })
+      .post(`/profiles/profile/friend-requests/${requesterId}/accept`)
+
       .expect(200);
 
     expect(res.body).toHaveProperty("message", "Friend request is accepted");
@@ -446,9 +444,7 @@ describe("Profile router functionality", () => {
 
     await authorizedUser
       .post(`/profiles/profile/friend-requests/${receiverId}/new`)
-      .send({
-        receiverId: receiverId,
-      })
+
       .expect(200);
 
     await authorizedUser
@@ -457,15 +453,13 @@ describe("Profile router functionality", () => {
       .expect(200);
 
     await authorizedUser
-      .post(`/profiles/profile/friend-requests/${receiverId}/accept`)
-      .send({ requesterId: requesterId })
+      .post(`/profiles/profile/friend-requests/${requesterId}/accept`)
+
       .expect(200);
 
     const res = await authorizedUser
       .delete(`/profiles/profile/friends/${requesterId}/delete`)
-      .send({
-        friendId: requesterId,
-      })
+
       .expect(200);
 
     expect(res.body).toHaveProperty(
