@@ -1,0 +1,22 @@
+const { Router } = require("express");
+const { requireAuth } = require("../middlewares/authorization");
+
+const postController = require("../controllers/postController");
+
+const postRouter = Router();
+
+postRouter.post("/:userId/new", requireAuth, postController.createPost);
+
+postRouter.put(
+  "/:userId/:postId/update",
+  requireAuth,
+  postController.updatePost
+);
+
+postRouter.delete(
+  "/:userId/:postId/delete",
+  requireAuth,
+  postController.deletePost
+);
+
+module.exports = postRouter;
