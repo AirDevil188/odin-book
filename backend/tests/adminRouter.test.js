@@ -182,4 +182,50 @@ describe("Admin router functionality", () => {
     expect(res.body.user).toHaveProperty("email", "test@test.com");
     expect(res.body.user).toHaveProperty("role", "admin");
   });
+
+  it("checks if the post is deleted", async () => {
+    const testUser = await prisma.user.create({
+      data: {
+        email: "test@test.com",
+        password: hashedPassword,
+        profile: {
+          create: {
+            firstName: "Test",
+            lastName: "Test",
+          },
+        },
+      },
+    });
+    const userId = testUser.id;
+    const testText = "Hello World Test";
+    const testPost = await prisma.post.create({
+      data: {
+        text: testText,
+        authorId: userId,
+      },
+    });
+    const postId = testPost.id;
+
+    await authorizedUser
+      .post("/log-in")
+      .send({
+        email: testEmail,
+        password: testPassword,
+      })
+      .expect(200);
+
+    const res = await authorizedUser
+      .delete(`/admin/${userId}/${postId}/post/delete`)
+      .expect(200);
+
+    expect(res.body).toHaveProperty(
+      "message",
+      "User post deleted successfully"
+    );
+
+    expect(res.body.post).toHaveProperty("id", testPost.id);
+    expect(res.body.post).toHaveProperty("text", testText);
+    expect(res.body.post).toHaveProperty("createdAt");
+    expect(res.body.post).toHaveProperty("authorId", userId);
+  });
 });
