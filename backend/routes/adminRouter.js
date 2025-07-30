@@ -12,6 +12,13 @@ adminRouter.delete(
   adminController.deleteUser
 );
 
+adminRouter.delete(
+  "/:userId/:postId/post/delete",
+  requireAuth,
+  checkAdmin,
+  adminController.deletePost
+);
+
 adminRouter.put(
   "/:userId/role/update",
   requireAuth,

@@ -39,7 +39,25 @@ const updateRole = async (req, res, next) => {
   }
 };
 
+const deletePost = async (req, res, next) => {
+  const { postId } = req.params;
+
+  try {
+    const post = await db.adminDeletePost(postId);
+    return res.status(200).json({
+      message: "User post deleted successfully",
+      post: post,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      message: "There was a problem with your request to delete user post",
+    });
+  }
+};
+
 module.exports = {
   deleteUser,
   updateRole,
+  deletePost,
 };
