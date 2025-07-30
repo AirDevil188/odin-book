@@ -69,7 +69,7 @@ model Post {
   updatedAt DateTime     @updatedAt
   likes     Int          @default(0)
   likedBy   LikedPosts[] @relation("PostLikedBy")
-  author    Profile      @relation("AuthorPosts", fields: [authorId], references: [id])
+  author    Profile      @relation("AuthorPosts", fields: [authorId], references: [userId])
   comments  Comment[]
 
   @@map("posts")
