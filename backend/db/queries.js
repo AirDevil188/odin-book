@@ -291,6 +291,53 @@ const deleteFriend = async (userId, friendId) => {
   }
 };
 
+// post controller queries
+
+const createPost = async (text, userId) => {
+  try {
+    return await prisma.post.create({
+      data: {
+        text: text,
+        authorId: userId,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
+const updatePost = async (text, postId, userId) => {
+  try {
+    return await prisma.post.update({
+      where: {
+        id: postId,
+        authorId: userId,
+      },
+      data: {
+        text: text,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
+const deletePost = async (postId, userId) => {
+  try {
+    return await prisma.post.delete({
+      where: {
+        id: postId,
+        authorId: userId,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
 module.exports = {
   adminDeleteUser,
   adminUpdateRole,
@@ -307,4 +354,7 @@ module.exports = {
   deleteFriendRequest,
   acceptFriendRequest,
   deleteFriend,
+  createPost,
+  updatePost,
+  deletePost,
 };
