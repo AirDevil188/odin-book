@@ -104,7 +104,7 @@ model LikedComments {
   userId    String
   commentId String
   comment   Comment @relation("CommentLikedBy", fields: [commentId], references: [id])
-  user      Profile @relation(fields: [userId], references: [id])
+  user      Profile @relation(fields: [userId], references: [userId])
 
   @@unique([userId, commentId])
   @@map("liked_comments")
