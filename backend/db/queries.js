@@ -338,6 +338,62 @@ const deletePost = async (postId, userId) => {
   }
 };
 
+const likePost = async (postId, userId) => {
+  try {
+    const existingLike = await prisma.likedPosts.findUnique({
+      where: {
+        userId_postId: {
+          userId: userId,
+          postId: postId,
+        },
+      },
+    });
+    if (existingLike) {
+      return await prisma.post.update({
+        where: {
+          id: postId,
+        },
+        data: {
+          likes: {
+            decrement: 1,
+          },
+          likedBy: {
+            delete: {
+              userId_postId: {
+                userId: userId,
+                postId: postId,
+              },
+            },
+          },
+        },
+      });
+    } else {
+      return await prisma.post.update({
+        where: {
+          id: postId,
+        },
+        data: {
+          likes: {
+            increment: 1,
+          },
+          likedBy: {
+            create: {
+              user: {
+                connect: {
+                  userId: userId,
+                },
+              },
+            },
+          },
+        },
+      });
+    }
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
 module.exports = {
   adminDeleteUser,
   adminUpdateRole,
@@ -357,4 +413,5 @@ module.exports = {
   createPost,
   updatePost,
   deletePost,
+  likePost,
 };
