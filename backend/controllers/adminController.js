@@ -4,6 +4,21 @@ const { config } = require("dotenv");
 
 config();
 
+const getPosts = async (req, res, next) => {
+  try {
+    const posts = await db.adminGetPosts();
+    res.status(200).json({
+      message: "Post fetched successfully",
+      posts: posts,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      message: "There was a problem with your request to fetch all posts",
+    });
+  }
+};
+
 const deleteUser = async (req, res, next) => {
   const { userId } = req.params;
 
@@ -57,6 +72,7 @@ const deletePost = async (req, res, next) => {
 };
 
 module.exports = {
+  getPosts,
   deleteUser,
   updateRole,
   deletePost,

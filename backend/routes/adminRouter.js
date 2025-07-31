@@ -5,6 +5,8 @@ const adminRouter = Router();
 
 const adminController = require("../controllers/adminController");
 
+adminRouter.get("/posts", requireAuth, checkAdmin, adminController.getPosts);
+
 adminRouter.delete(
   "/:userId/delete",
   requireAuth,

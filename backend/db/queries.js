@@ -54,6 +54,19 @@ const createUser = async (email, password, first_name, last_name, avatar) => {
 
 // admin controller queries
 
+const adminGetPosts = async () => {
+  try {
+    return prisma.post.findMany({
+      include: {
+        comments: {},
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
 const adminDeleteUser = async (userId) => {
   try {
     return await prisma.user.delete({
@@ -531,6 +544,7 @@ const likeComment = async (postId, commentId, userId) => {
 };
 
 module.exports = {
+  adminGetPosts,
   adminDeleteUser,
   adminUpdateRole,
   adminDeletePost,
