@@ -340,6 +340,7 @@ const deletePost = async (postId, userId) => {
 
 const likePost = async (postId, userId) => {
   try {
+    // search db for existing like
     const existingLike = await prisma.likedPosts.findUnique({
       where: {
         userId_postId: {
@@ -348,6 +349,7 @@ const likePost = async (postId, userId) => {
         },
       },
     });
+    // if existing like is in the db, dislike the post
     if (existingLike) {
       return await prisma.post.update({
         where: {
@@ -367,10 +369,118 @@ const likePost = async (postId, userId) => {
           },
         },
       });
+      // if the like is not found in the db, like the post
     } else {
       return await prisma.post.update({
         where: {
           id: postId,
+        },
+        data: {
+          likes: {
+            increment: 1,
+          },
+          likedBy: {
+            create: {
+              user: {
+                connect: {
+                  userId: userId,
+                },
+              },
+            },
+          },
+        },
+      });
+    }
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
+// comment controller queries
+
+const createComment = async (text, postId, userId) => {
+  try {
+    return await prisma.comment.create({
+      data: {
+        text: text,
+        authorId: userId,
+        postId: postId,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
+const updateComment = async (text, commentId, userId) => {
+  try {
+    return await prisma.comment.update({
+      where: {
+        id: commentId,
+        authorId: userId,
+      },
+      data: {
+        text: text,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
+const deleteComment = async (commentId, userId) => {
+  try {
+    return await prisma.comment.delete({
+      where: {
+        id: commentId,
+        authorId: userId,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
+const likeComment = async (postId, commentId, userId) => {
+  try {
+    const existingLike = await prisma.likedComments.findUnique({
+      where: {
+        userId_commentId: {
+          userId: userId,
+          commentId: commentId,
+        },
+      },
+    });
+    if (existingLike) {
+      return await prisma.comment.update({
+        where: {
+          authorId: userId,
+          id: commentId,
+        },
+        data: {
+          likes: {
+            decrement: 1,
+          },
+          likedBy: {
+            delete: {
+              userId_commentId: {
+                userId: userId,
+                commentId: commentId,
+              },
+            },
+          },
+        },
+      });
+    } else {
+      return await prisma.comment.update({
+        where: {
+          authorId: userId,
+          postId: postId,
+          id: commentId,
         },
         data: {
           likes: {
@@ -414,4 +524,8 @@ module.exports = {
   updatePost,
   deletePost,
   likePost,
+  createComment,
+  updateComment,
+  deleteComment,
+  likeComment,
 };
