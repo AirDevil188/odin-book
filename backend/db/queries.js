@@ -293,6 +293,32 @@ const deleteFriend = async (userId, friendId) => {
 
 // post controller queries
 
+const getPosts = async (userId) => {
+  const friendship = await prisma.friendship.findMany({
+    where: {
+      userId: userId,
+    },
+  });
+
+  const friendIds = friendship.map((friend) => friend.friendId);
+
+  try {
+    return await prisma.post.findMany({
+      where: {
+        authorId: {
+          in: friendIds,
+        },
+      },
+      include: {
+        comments: {},
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
 const createPost = async (text, userId) => {
   try {
     return await prisma.post.create({
@@ -520,6 +546,7 @@ module.exports = {
   deleteFriendRequest,
   acceptFriendRequest,
   deleteFriend,
+  getPosts,
   createPost,
   updatePost,
   deletePost,
