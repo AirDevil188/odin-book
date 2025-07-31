@@ -183,4 +183,86 @@ describe("Post router functionality", () => {
     expect(res.body.post).toHaveProperty("createdAt");
     expect(res.body.post).toHaveProperty("authorId", userId);
   });
+
+  it("should like a post", async () => {
+    const testText = "First test post";
+    const testUser = await prisma.user.create({
+      data: {
+        email: testEmail,
+        password: hashedPassword,
+        profile: {
+          create: {
+            firstName: "Test",
+            lastName: "Test",
+          },
+        },
+      },
+    });
+    const userId = testUser.id;
+    const testPost = await prisma.post.create({
+      data: {
+        text: testText,
+        authorId: userId,
+      },
+    });
+    const postId = testPost.id;
+
+    await authorizedUser
+      .post("/log-in")
+      .send({
+        email: testEmail,
+        password: testPassword,
+      })
+      .expect(200);
+
+    const res = await authorizedUser
+      .put(`/profiles/posts/${userId}/${postId}/like`)
+      .expect(200);
+
+    expect(res.body.post).toHaveProperty("id", postId);
+    expect(res.body.post).toHaveProperty("likes", 1);
+  });
+  it("should dislike a post", async () => {
+    const testText = "First test post";
+    const testUser = await prisma.user.create({
+      data: {
+        email: testEmail,
+        password: hashedPassword,
+        profile: {
+          create: {
+            firstName: "Test",
+            lastName: "Test",
+          },
+        },
+      },
+    });
+    const userId = testUser.id;
+    const testPost = await prisma.post.create({
+      data: {
+        text: testText,
+        authorId: userId,
+        likes: 1,
+        likedBy: {
+          create: {
+            userId: userId,
+          },
+        },
+      },
+    });
+    const postId = testPost.id;
+    await authorizedUser
+      .post("/log-in")
+      .send({
+        email: testEmail,
+        password: testPassword,
+      })
+      .expect(200);
+
+    const res = await authorizedUser
+      .put(`/profiles/posts/${userId}/${postId}/like`)
+      .expect(200);
+
+    expect(res.body.post).toHaveProperty("id", postId);
+    expect(res.body.post).toHaveProperty("likes", 0);
+  });
 });
