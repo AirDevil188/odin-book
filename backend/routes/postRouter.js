@@ -5,6 +5,8 @@ const postController = require("../controllers/postController");
 
 const postRouter = Router();
 
+postRouter.get("/", requireAuth, postController.getPosts);
+
 postRouter.post("/:userId/new", requireAuth, postController.createPost);
 
 postRouter.put(

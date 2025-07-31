@@ -1,6 +1,22 @@
 const { body, validationResult } = require("express-validator");
 const db = require("../db/queries");
 
+const getPosts = async (req, res, next) => {
+  const { id } = req.user;
+  try {
+    const posts = await db.getPosts(id);
+    return res.status(500).json({
+      message: "Post fetched successfully",
+      posts: posts,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      message: "There was a problem with your request to fetch posts",
+    });
+  }
+};
+
 const createPost = async (req, res, next) => {
   const { id } = req.user;
   const { text } = req.body;
@@ -74,6 +90,7 @@ const likePost = async (req, res, next) => {
 };
 
 module.exports = {
+  getPosts,
   createPost,
   updatePost,
   deletePost,
