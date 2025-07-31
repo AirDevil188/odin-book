@@ -19,4 +19,6 @@ postRouter.delete(
   postController.deletePost
 );
 
+postRouter.put("/:userId/:postId/like", requireAuth, postController.likePost);
+
 module.exports = postRouter;

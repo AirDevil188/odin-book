@@ -55,8 +55,27 @@ const deletePost = async (req, res, next) => {
   }
 };
 
+const likePost = async (req, res, next) => {
+  const { id } = req.user;
+  const { postId } = req.params;
+
+  try {
+    const like = await db.likePost(postId, id);
+    res.status(200).json({
+      message: "Post liked successfully",
+      post: like,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      message: "There was a problem with your request to like a post",
+    });
+  }
+};
+
 module.exports = {
   createPost,
   updatePost,
   deletePost,
+  likePost,
 };
