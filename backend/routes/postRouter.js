@@ -7,6 +7,8 @@ const postRouter = Router();
 
 postRouter.get("/", requireAuth, postController.getPosts);
 
+postRouter.get("/:friendId/:postId", requireAuth, postController.getPost);
+
 postRouter.post("/:userId/new", requireAuth, postController.createPost);
 
 postRouter.put(
