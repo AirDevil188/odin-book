@@ -8,7 +8,7 @@ const adminController = require("../controllers/adminController");
 adminRouter.get("/posts", requireAuth, checkAdmin, adminController.getPosts);
 
 adminRouter.get(
-  "/posts/:postId/authorId",
+  "/posts/:postId/:authorId",
   requireAuth,
   checkAdmin,
   adminController.getPost
