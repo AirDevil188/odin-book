@@ -17,6 +17,21 @@ const getPosts = async (req, res, next) => {
   }
 };
 
+const getPost = async (req, res, next) => {
+  const { id } = req.user;
+
+  const { postId } = req.params;
+
+  try {
+    const post = await db.getPost();
+  } catch (err) {
+    console.log(err);
+    return res
+      .status(500)
+      .json("There was a problem with your request to fetch a post");
+  }
+};
+
 const createPost = async (req, res, next) => {
   const { id } = req.user;
   const { text } = req.body;
@@ -91,6 +106,7 @@ const likePost = async (req, res, next) => {
 
 module.exports = {
   getPosts,
+  getPost,
   createPost,
   updatePost,
   deletePost,

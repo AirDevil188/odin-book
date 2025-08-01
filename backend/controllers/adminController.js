@@ -19,6 +19,23 @@ const getPosts = async (req, res, next) => {
   }
 };
 
+const getPost = async (req, res, next) => {
+  const { postId, authorId } = req.params;
+
+  try {
+    const post = await db.adminGetPost(postId, authorId);
+    res.status(200).json({
+      message: "User post fetched successfully",
+      post: post,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      message: "There was a problem with your request to fetch user post",
+    });
+  }
+};
+
 const deleteUser = async (req, res, next) => {
   const { userId } = req.params;
 
@@ -73,6 +90,7 @@ const deletePost = async (req, res, next) => {
 
 module.exports = {
   getPosts,
+  getPost,
   deleteUser,
   updateRole,
   deletePost,
