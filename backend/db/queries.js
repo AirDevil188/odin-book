@@ -67,6 +67,23 @@ const adminGetPosts = async () => {
   }
 };
 
+const adminGetPost = async (postId, authorId) => {
+  try {
+    return prisma.post.findFirst({
+      where: {
+        id: postId,
+        authorId: authorId,
+      },
+      include: {
+        comments: {},
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
 const adminDeleteUser = async (userId) => {
   try {
     return await prisma.user.delete({
@@ -332,6 +349,34 @@ const getFriendsPosts = async (userId) => {
   }
 };
 
+const getFriendPost = async (postId, userId) => {
+  try {
+    const friendship = await prisma.friendship.findUnique({
+      where: {
+        userId_friendId: {
+          userId: userId,
+          friendId: friendId,
+        },
+      },
+    });
+    if (friendship) {
+      const friendId = friendship.friendId;
+      return await prisma.post.findFirst({
+        where: {
+          id: postId,
+          authorId: friendId,
+        },
+        include: {
+          comments: {},
+        },
+      });
+    } else return null;
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
 const createPost = async (text, userId) => {
   try {
     return await prisma.post.create({
@@ -545,6 +590,7 @@ const likeComment = async (postId, commentId, userId) => {
 
 module.exports = {
   adminGetPosts,
+  adminGetPost,
   adminDeleteUser,
   adminUpdateRole,
   adminDeletePost,
@@ -560,6 +606,7 @@ module.exports = {
   deleteFriendRequest,
   acceptFriendRequest,
   deleteFriend,
+  getFriendPost,
   getFriendsPosts,
   createPost,
   updatePost,
