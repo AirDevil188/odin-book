@@ -3,6 +3,7 @@ const request = require("supertest");
 const { config } = require("dotenv");
 const cookieParser = require("cookie-parser");
 const { PrismaClient } = require("@prisma/client");
+const { faker } = require("@faker-js/faker");
 
 config();
 
@@ -227,5 +228,87 @@ describe("Admin router functionality", () => {
     expect(res.body.post).toHaveProperty("text", testText);
     expect(res.body.post).toHaveProperty("createdAt");
     expect(res.body.post).toHaveProperty("authorId", userId);
+  });
+
+  it("should fetch all posts", async () => {
+    Array.from({ length: 10 }).map(async (_, i) => {
+      await prisma.user.create({
+        data: {
+          email: faker.internet.email(),
+          password: hashedPassword,
+          profile: {
+            create: {
+              firstName: faker.person.firstName(),
+              lastName: faker.person.lastName(),
+              posts: {
+                create: {
+                  text: faker.lorem.sentence({ max: 1 }),
+                },
+              },
+            },
+          },
+        },
+      });
+    });
+    await authorizedUser
+      .post("/log-in")
+      .send({
+        email: testEmail,
+        password: testPassword,
+      })
+      .expect(200);
+
+    const res = await authorizedUser.get("/admin/posts").expect(200);
+
+    expect(res.body).toHaveProperty("message", "Posts fetched successfully");
+    expect(res.body.posts).toHaveLength(10);
+  });
+
+  it("should fetch specified user post", async () => {
+    const testUser = await prisma.user.create({
+      data: {
+        email: "test2@test.com",
+        password: hashedPassword,
+        profile: {
+          create: {
+            firstName: "Test",
+            lastName: "Test",
+          },
+        },
+      },
+    });
+
+    const authorId = testUser.id;
+
+    const testPost = await prisma.post.create({
+      data: {
+        text: "First test post",
+        authorId: authorId,
+      },
+    });
+
+    const postId = testPost.id;
+
+    await authorizedUser
+      .post("/log-in")
+      .send({
+        email: testEmail,
+        password: testPassword,
+      })
+      .expect(200);
+
+    const res = await authorizedUser
+      .get(`/admin/posts/${postId}/${authorId}`)
+      .expect(200);
+
+    expect(res.body).toHaveProperty(
+      "message",
+      "User post fetched successfully"
+    );
+    expect(res.body.post).toHaveProperty("id");
+    expect(res.body.post).toHaveProperty("authorId", authorId);
+    expect(res.body.post).toHaveProperty("text", "First test post");
+    expect(res.body.post).toHaveProperty("createdAt");
+    expect(res.body.post).toHaveProperty("updatedAt");
   });
 });
