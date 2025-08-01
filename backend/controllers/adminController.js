@@ -8,7 +8,7 @@ const getPosts = async (req, res, next) => {
   try {
     const posts = await db.adminGetPosts();
     res.status(200).json({
-      message: "Post fetched successfully",
+      message: "Posts fetched successfully",
       posts: posts,
     });
   } catch (err) {
