@@ -23,7 +23,7 @@ const getPost = async (req, res, next) => {
   const { postId } = req.params;
 
   try {
-    const post = await db.getPost();
+    const post = await db.getFriendPost(postId);
   } catch (err) {
     console.log(err);
     return res
