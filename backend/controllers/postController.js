@@ -4,7 +4,7 @@ const db = require("../db/queries");
 const getPosts = async (req, res, next) => {
   const { id } = req.user;
   try {
-    const posts = await db.getPosts(id);
+    const posts = await db.getFriendsPosts(id);
     return res.status(500).json({
       message: "Post fetched successfully",
       posts: posts,
