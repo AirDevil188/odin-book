@@ -24,6 +24,10 @@ const getPost = async (req, res, next) => {
 
   try {
     const post = await db.getFriendPost(postId);
+    return res.status(200).json({
+      message: "User post fetched successfully",
+      post: post,
+    });
   } catch (err) {
     console.log(err);
     return res
