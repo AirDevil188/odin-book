@@ -324,19 +324,17 @@ const deleteFriend = async (userId, friendId) => {
 // post controller queries
 
 const getFriendsPosts = async (userId) => {
-  const friendship = await prisma.friendship.findMany({
-    where: {
-      userId: userId,
-    },
-  });
-
-  const friendIds = friendship.map((friend) => friend.friendId);
-
   try {
     return await prisma.post.findMany({
       where: {
-        authorId: {
-          in: friendIds,
+        author: {
+          is: {
+            friendsOf: {
+              some: {
+                userId: userId,
+              },
+            },
+          },
         },
       },
       include: {
@@ -351,26 +349,20 @@ const getFriendsPosts = async (userId) => {
 
 const getFriendPost = async (postId, userId) => {
   try {
-    const friendship = await prisma.friendship.findUnique({
+    return await prisma.post.findFirst({
       where: {
-        userId_friendId: {
-          userId: userId,
-          friendId: friendId,
+        id: postId,
+        author: {
+          is: {
+            friendsOf: {
+              some: {
+                userId: userId,
+              },
+            },
+          },
         },
       },
     });
-    if (friendship) {
-      const friendId = friendship.friendId;
-      return await prisma.post.findFirst({
-        where: {
-          id: postId,
-          authorId: friendId,
-        },
-        include: {
-          comments: {},
-        },
-      });
-    } else return null;
   } catch (err) {
     console.log(err);
     throw err;
