@@ -78,7 +78,7 @@ describe("Post router functionality", () => {
       .expect(200);
 
     const res = await authorizedUser
-      .post(`/profiles/posts/${userId}/new`)
+      .post(`/profiles/posts/new`)
       .send({
         text: testText,
       })
@@ -127,7 +127,7 @@ describe("Post router functionality", () => {
       .expect(200);
 
     const res = await authorizedUser
-      .put(`/profiles/posts/${userId}/${postId}/update`)
+      .put(`/profiles/posts/${postId}/update`)
       .send({ postId: postId, text: testUpdatedText })
       .expect(200);
 
@@ -174,7 +174,7 @@ describe("Post router functionality", () => {
       .expect(200);
 
     const res = await authorizedUser
-      .delete(`/profiles/posts/${userId}/${postId}/delete`)
+      .delete(`/profiles/posts/${postId}/delete`)
       .expect(200);
 
     expect(res.body).toHaveProperty("message", "Post deleted successfully");
@@ -216,7 +216,7 @@ describe("Post router functionality", () => {
       .expect(200);
 
     const res = await authorizedUser
-      .put(`/profiles/posts/${userId}/${postId}/like`)
+      .put(`/profiles/posts/${postId}/like`)
       .expect(200);
 
     expect(res.body.post).toHaveProperty("id", postId);
@@ -259,7 +259,7 @@ describe("Post router functionality", () => {
       .expect(200);
 
     const res = await authorizedUser
-      .put(`/profiles/posts/${userId}/${postId}/like`)
+      .put(`/profiles/posts/${postId}/like`)
       .expect(200);
 
     expect(res.body.post).toHaveProperty("id", postId);

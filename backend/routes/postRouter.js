@@ -7,22 +7,14 @@ const postRouter = Router();
 
 postRouter.get("/", requireAuth, postController.getPosts);
 
-postRouter.get("/:friendId/:postId", requireAuth, postController.getPost);
+postRouter.get("/:postId", requireAuth, postController.getPost);
 
-postRouter.post("/:userId/new", requireAuth, postController.createPost);
+postRouter.post("/new", requireAuth, postController.createPost);
 
-postRouter.put(
-  "/:userId/:postId/update",
-  requireAuth,
-  postController.updatePost
-);
+postRouter.put("/:postId/update", requireAuth, postController.updatePost);
 
-postRouter.delete(
-  "/:userId/:postId/delete",
-  requireAuth,
-  postController.deletePost
-);
+postRouter.delete("/:postId/delete", requireAuth, postController.deletePost);
 
-postRouter.put("/:userId/:postId/like", requireAuth, postController.likePost);
+postRouter.put("/:postId/like", requireAuth, postController.likePost);
 
 module.exports = postRouter;
