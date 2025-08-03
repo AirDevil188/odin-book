@@ -521,7 +521,7 @@ const deleteComment = async (commentId, userId) => {
   }
 };
 
-const likeComment = async (postId, commentId, userId) => {
+const likeComment = async (commentId, userId) => {
   try {
     const existingLike = await prisma.likedComments.findUnique({
       where: {
@@ -534,7 +534,6 @@ const likeComment = async (postId, commentId, userId) => {
     if (existingLike) {
       return await prisma.comment.update({
         where: {
-          authorId: userId,
           id: commentId,
         },
         data: {
@@ -550,12 +549,13 @@ const likeComment = async (postId, commentId, userId) => {
             },
           },
         },
+        include: {
+          likedBy: {},
+        },
       });
     } else {
       return await prisma.comment.update({
         where: {
-          authorId: userId,
-          postId: postId,
           id: commentId,
         },
         data: {
@@ -564,6 +564,260 @@ const likeComment = async (postId, commentId, userId) => {
           },
           likedBy: {
             create: {
+              user: {
+                connect: {
+                  userId: userId,
+                },
+              },
+            },
+          },
+        },
+        include: {
+          likedBy: {},
+        },
+      });
+    }
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
+// chatroom queries
+
+const getChats = async (userId) => {
+  try {
+    return await prisma.chat.findMany({
+      where: {
+        users: {
+          some: {
+            userId: userId,
+          },
+        },
+        messages: {},
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
+const getChat = async (chatroomId) => {
+  try {
+    return await prisma.chat.findUnique({
+      where: {
+        id: chatroomId,
+      },
+      include: {
+        users: {},
+        messages: {},
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
+const createChat = async (userId1, userId2, text) => {
+  const userIds = [...userId1, userId2];
+
+  try {
+    // validate if there are two users
+    if (userIds.length < 2) {
+      throw Error("You must provide at least two users");
+    }
+    // try to find if chatroom exists
+    const existingChat = await prisma.chat.findFirst({
+      where: {
+        AND: [
+          {
+            users: {
+              some: {
+                userId: userId1,
+              },
+            },
+          },
+          {
+            users: {
+              some: {
+                userId: userId2,
+              },
+            },
+          },
+        ],
+      },
+      include: {
+        users: {},
+        messages: {},
+      },
+    });
+
+    if (existingChat && existingChat.users.length === userIds.length) {
+      // if chat already exists then create message for it
+      const existingChatId = existingChat.id;
+      await prisma.message.create({
+        data: {
+          text: text,
+          chatroomId: existingChatId,
+        },
+      });
+      return existingChat;
+    } else {
+      // if chat doesn't exists create it and create new message
+      return await prisma.chat.create({
+        data: {
+          messages: {
+            create: {
+              text: text,
+            },
+          },
+          users: {
+            connect: userIds.map((id) => ({ userId: id })),
+          },
+        },
+      });
+    }
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
+const deleteChat = async (chatRoomId, userId) => {
+  try {
+    return await prisma.chat.update({
+      where: {
+        id: chatRoomId,
+      },
+      data: {
+        users: {
+          disconnect: {
+            userId: userId,
+          },
+        },
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
+// messages controller queries
+
+const createMessage = async (text, chatroomId) => {
+  try {
+    return await prisma.message.create({
+      data: {
+        chatroomId: chatroomId,
+        text: text,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
+const updateMessage = async (text, messageId, chatroomId) => {
+  try {
+    return await prisma.message.update({
+      where: {
+        id: messageId,
+        chatroomId: chatroomId,
+      },
+      data: {
+        text: text,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
+// group controller queries
+
+const createGroup = async (userId, userIds, name, text) => {
+  userIds = [...new Set(userIds)];
+
+  try {
+    // validate if there are at least two users
+    if (userIds.length < 2) {
+      throw Error("You must at least provide two users");
+      // if there are only two users than chatroom will be created
+    } else if (userIds.length === 2) {
+      // check if the chat exists
+      const existingChat = await prisma.chat.findFirst({
+        where: {
+          users: {
+            every: {
+              userId: {
+                in: userIds,
+              },
+            },
+          },
+        },
+        include: {
+          messages: {},
+          users: {},
+        },
+      });
+      if (existingChat && existingChat.users.length === userIds.length) {
+        // if the chat exists
+        //  create new message for it
+        const existingChatId = existingChat.id;
+
+        await prisma.message.create({
+          data: {
+            text: text,
+            chatroomId: existingChatId,
+            user: {
+              connect: {
+                userId: userId,
+              },
+            },
+          },
+        });
+        return existingChat;
+      } else {
+        // if chat doesn't exists create new one
+        // create message
+        await prisma.chat.create({
+          data: {
+            users: {
+              connect: userIds.map((id) => ({ userId: id })),
+            },
+            messages: {
+              create: {
+                text: text,
+                user: {
+                  connect: {
+                    userId: userId,
+                  },
+                },
+              },
+            },
+          },
+        });
+      }
+    } else if (userIds.length > 2) {
+      // if there are more than two users then group will be created
+      // create new message for it
+      return await prisma.group.create({
+        data: {
+          name: name,
+          users: {
+            create: userIds.map((id) => ({
+              userId: id,
+              role: id === userId ? "admin" : "user",
+            })),
+          },
+          messages: {
+            create: {
+              text: text,
               user: {
                 connect: {
                   userId: userId,
@@ -608,4 +862,11 @@ module.exports = {
   updateComment,
   deleteComment,
   likeComment,
+  getChats,
+  getChat,
+  createChat,
+  deleteChat,
+  createMessage,
+  updateMessage,
+  createGroup,
 };
