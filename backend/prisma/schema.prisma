@@ -34,6 +34,7 @@ model Profile {
   posts                  Post[]           @relation("AuthorPosts")
   user                   User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   chats                  Chat[]           @relation("ChatToProfile")
+  groups                 GroupMembers[]   @relation("GroupToProfile")
 
   @@map("profiles")
 }
@@ -118,14 +119,37 @@ model Chat {
   @@map("chats")
 }
 
+model Group {
+  id       String         @id @unique @default(uuid())
+  name     String
+  messages Message[]
+  users    GroupMembers[]
+
+  @@map("group")
+}
+
+model GroupMembers {
+  id      String  @id @default(uuid())
+  role    Role    @default(user)
+  groupId String
+  group   Group   @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  userId  String
+  user    Profile @relation("GroupToProfile", fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@unique([userId, groupId])
+  @@map("group_members")
+}
+
 model Message {
   id         String   @id @default(uuid())
   text       String
   timestamp  DateTime @default(now())
-  chatroomId String   @unique
+  chatroomId String?
+  groupId    String?
   userId     String
-  chats      Chat     @relation(fields: [chatroomId], references: [id])
-  user       Profile  @relation(fields: [userId], references: [id])
+  chats      Chat?    @relation(fields: [chatroomId], references: [id])
+  group      Group?   @relation(fields: [groupId], references: [id])
+  user       Profile  @relation(fields: [userId], references: [userId])
 
   @@map("messages")
 }
