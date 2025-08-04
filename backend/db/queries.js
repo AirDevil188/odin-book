@@ -594,7 +594,10 @@ const getChats = async (userId) => {
             userId: userId,
           },
         },
+      },
+      include: {
         messages: {},
+        users: {},
       },
     });
   } catch (err) {
