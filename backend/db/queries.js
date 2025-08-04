@@ -723,13 +723,12 @@ const createMessage = async (text, chatroomId, groupId, userId) => {
   }
 };
 
-const updateMessage = async (text, messageId, chatroomId, groupId, userId) => {
+const updateMessage = async (text, messageId, userId) => {
   try {
     return await prisma.message.update({
       where: {
         id: messageId,
-        chatroomId: chatroomId,
-        groupId: groupId,
+
         userId: userId,
       },
       data: {
