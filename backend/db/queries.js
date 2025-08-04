@@ -708,14 +708,45 @@ const deleteChat = async (chatRoomId, userId) => {
 // messages controller queries
 
 const createMessage = async (text, chatroomId, groupId, userId) => {
+  let checkChatroom = null;
+  let checkGroup = null;
+
   try {
-    return await prisma.message.create({
-      data: {
-        chatroomId: chatroomId,
-        text: text,
-        groupId: groupId,
-        userId: userId,
-      },
+    await prisma.$transaction(async () => {
+      if (chatroomId) {
+        checkChatroom = await prisma.chat.findUnique({
+          where: {
+            id: chatroomId,
+            users: {
+              some: {
+                userId: userId,
+              },
+            },
+          },
+        });
+      } else {
+        checkGroup = await prisma.group.findUnique({
+          where: {
+            id: groupId,
+            users: {
+              some: {
+                userId: userId,
+              },
+            },
+          },
+        });
+      }
+      if (!checkGroup && !checkChatroom) {
+        throw Error("No chatroom or group found");
+      }
+      return await prisma.message.create({
+        data: {
+          text: text,
+          chatroomId: chatroomId,
+          groupId: groupId,
+          userId: userId,
+        },
+      });
     });
   } catch (err) {
     console.log(err);
@@ -723,6 +754,10 @@ const createMessage = async (text, chatroomId, groupId, userId) => {
   }
 };
 
+/// check arg
+// search chat or group
+// if matching create message
+// if not error
 const updateMessage = async (text, messageId, userId) => {
   try {
     return await prisma.message.update({
