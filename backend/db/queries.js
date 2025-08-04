@@ -603,11 +603,16 @@ const getChats = async (userId) => {
   }
 };
 
-const getChat = async (chatroomId) => {
+const getChat = async (chatroomId, userId) => {
   try {
     return await prisma.chat.findUnique({
       where: {
         id: chatroomId,
+        users: {
+          some: {
+            userId: userId,
+          },
+        },
       },
       include: {
         users: {},
