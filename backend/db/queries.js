@@ -707,12 +707,14 @@ const deleteChat = async (chatRoomId, userId) => {
 
 // messages controller queries
 
-const createMessage = async (text, chatroomId) => {
+const createMessage = async (text, chatroomId, groupId, userId) => {
   try {
     return await prisma.message.create({
       data: {
         chatroomId: chatroomId,
         text: text,
+        groupId: groupId,
+        userId: userId,
       },
     });
   } catch (err) {
