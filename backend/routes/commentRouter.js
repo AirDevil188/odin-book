@@ -6,25 +6,25 @@ const commentController = require("../controllers/commentController");
 const { requireAuth } = require("../middlewares/authorization");
 
 commentRouter.post(
-  "/:userId/:postId/new",
+  "/:postId/new",
   requireAuth,
   commentController.createComment
 );
 
 commentRouter.delete(
-  "/:userId/:postId/:commentId/delete",
+  "/:commentId/delete",
   requireAuth,
   commentController.deleteComment
 );
 
 commentRouter.put(
-  "/:userId/:postId/:commentId/update",
+  "/:commentId/update",
   requireAuth,
   commentController.updateComment
 );
 
 commentRouter.put(
-  "/:userId/:postId/:commentId/like",
+  "/:commentId/like",
   requireAuth,
   commentController.likeComment
 );

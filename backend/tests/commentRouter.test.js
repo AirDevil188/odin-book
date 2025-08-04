@@ -90,7 +90,7 @@ describe("Test Comment router functionality", () => {
       .expect(200);
 
     const res = await authorizedUser
-      .post(`/profiles/comments/${userId}/${postId}/new`)
+      .post(`/profiles/comments/${postId}/new`)
       .send({ text: testText })
       .expect(200);
 
@@ -149,7 +149,7 @@ describe("Test Comment router functionality", () => {
       })
       .expect(200);
     const res = await authorizedUser
-      .put(`/profiles/comments/${userId}/${postId}/${commentId}/update`)
+      .put(`/profiles/comments/${commentId}/update`)
       .send({
         text: "Comment updated",
       });
@@ -209,7 +209,7 @@ describe("Test Comment router functionality", () => {
       .expect(200);
 
     const res = await authorizedUser
-      .delete(`/profiles/comments/${userId}/${postId}/${commentId}/delete`)
+      .delete(`/profiles/comments/${commentId}/delete`)
       .expect(200);
 
     expect(res.body).toHaveProperty("message", "Comment deleted successfully");
@@ -267,7 +267,7 @@ describe("Test Comment router functionality", () => {
       .expect(200);
 
     const res = await authorizedUser.put(
-      `/profiles/comments/${userId}/${postId}/${commentId}/like`
+      `/profiles/comments/${commentId}/like`
     );
 
     expect(res.body).toHaveProperty("message", "Comment liked successfully");
@@ -329,7 +329,7 @@ describe("Test Comment router functionality", () => {
       .expect(200);
 
     const res = await authorizedUser
-      .put(`/profiles/comments/${userId}/${postId}/${commentId}/like`)
+      .put(`/profiles/comments/${commentId}/like`)
       .expect(200);
 
     expect(res.body.comment).toHaveProperty("id", commentId);

@@ -22,7 +22,7 @@ adminRouter.delete(
 );
 
 adminRouter.delete(
-  "/:userId/:postId/post/delete",
+  "/:postId/post/delete",
   requireAuth,
   checkAdmin,
   adminController.deletePost

@@ -64,10 +64,10 @@ const deleteComment = async (req, res, next) => {
 const likeComment = async (req, res, next) => {
   const { id } = req.user;
 
-  const { postId, commentId } = req.params;
+  const { commentId } = req.params;
 
   try {
-    const like = await db.likeComment(postId, commentId, id);
+    const like = await db.likeComment(commentId, id);
     return res.status(200).json({
       message: "Comment liked successfully",
       comment: like,
