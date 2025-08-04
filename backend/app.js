@@ -14,6 +14,7 @@ const adminRouter = require("./routes/adminRouter");
 const profileRouter = require("./routes/profileRouter");
 const postRouter = require("./routes/postRouter");
 const commentRouter = require("./routes/commentRouter");
+const messageRouter = require("./routes/messageRouter");
 
 app.use(cors({ origin: "http//:localhost:3000" }));
 app.use(helmet());
@@ -26,6 +27,7 @@ app.use("/admin", adminRouter);
 app.use("/profiles", profileRouter);
 app.use("/profiles/posts", postRouter);
 app.use("/profiles/comments", commentRouter);
+app.use("/profiles/messages", messageRouter);
 
 helmet.contentSecurityPolicy({
   directives: {
