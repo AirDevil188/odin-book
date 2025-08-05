@@ -30,20 +30,13 @@ app.use("/", userRouter);
 app.use("/profiles/chats", chatRouter);
 
 describe("Test Chat Router functionality", () => {
-  const testEmail = "test@test.com";
-  const secondTestEmail = "test@email.com";
+  const testEmails = ["test@test.com", "test2@test.com", "test3@test.com"];
   const testPassword = "Test1234!";
 
   let hashedPassword;
   let authorizedUser;
-  let user1;
-  let user2;
-  let user1Id;
-  let user2Id;
-  let userIds;
   let chat;
   let chatroomId;
-  let groupId;
 
   beforeAll(async () => {
     hashedPassword = await createHashedPassword(testPassword);
@@ -55,34 +48,24 @@ describe("Test Chat Router functionality", () => {
     await prisma.message.deleteMany({});
     await prisma.chat.deleteMany({});
 
-    user1 = await prisma.user.create({
-      data: {
-        email: testEmail,
-        password: hashedPassword,
-        profile: {
-          create: {
-            firstName: "Test",
-            lastName: "Test",
+    const userPromise = Array.from({ length: 2 }).map(async (_, i) => {
+      const user = await prisma.user.create({
+        data: {
+          email: testEmails[i],
+          password: hashedPassword,
+          profile: {
+            create: {
+              firstName: "Test",
+              lastName: "Test",
+            },
           },
         },
-      },
-    });
-    user2 = await prisma.user.create({
-      data: {
-        email: secondTestEmail,
-        password: hashedPassword,
-        profile: {
-          create: {
-            firstName: "Test 2",
-            lastName: "Test 2",
-          },
-        },
-      },
+      });
+      return user;
     });
 
-    user1Id = user1.id;
-    user2Id = user2.id;
-    userIds = [user1Id, user2Id];
+    const users = await Promise.all(userPromise);
+    const userIds = users.map((user) => user.id);
 
     chat = await prisma.chat.create({
       data: {
@@ -92,7 +75,7 @@ describe("Test Chat Router functionality", () => {
         messages: {
           create: {
             text: "Test message",
-            userId: user1Id,
+            userId: userIds[0],
           },
         },
       },
@@ -111,7 +94,7 @@ describe("Test Chat Router functionality", () => {
     await authorizedUser
       .post("/log-in")
       .send({
-        email: testEmail,
+        email: testEmails[0],
         password: "Test1234!",
       })
       .expect(200);
@@ -130,7 +113,7 @@ describe("Test Chat Router functionality", () => {
     await authorizedUser
       .post("/log-in")
       .send({
-        email: testEmail,
+        email: testEmails[0],
         password: testPassword,
       })
       .expect(200);
@@ -138,8 +121,6 @@ describe("Test Chat Router functionality", () => {
     const res = await authorizedUser
       .get(`/profiles/chats/${chatroomId}`)
       .expect(200);
-
-    console.error(res.body);
 
     expect(res.body).toHaveProperty(
       "message",
