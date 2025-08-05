@@ -629,7 +629,7 @@ const getChat = async (chatroomId, userId) => {
 };
 
 const createChat = async (userId1, userId2, text) => {
-  const userIds = [...userId1, userId2];
+  const userIds = [userId1, userId2];
 
   try {
     // validate if there are two users
@@ -678,9 +678,11 @@ const createChat = async (userId1, userId2, text) => {
         data: {
           messages: {
             create: {
+              userId: userId1,
               text: text,
             },
           },
+
           users: {
             connect: userIds.map((id) => ({ userId: id })),
           },
@@ -720,7 +722,7 @@ const createMessage = async (text, chatroomId, groupId, userId) => {
   let checkGroup = null;
 
   try {
-    await prisma.$transaction(async () => {
+    return await prisma.$transaction(async () => {
       if (chatroomId) {
         checkChatroom = await prisma.chat.findUnique({
           where: {
