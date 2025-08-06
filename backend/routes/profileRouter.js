@@ -8,7 +8,7 @@ const profileRouter = Router();
 
 profileRouter.get("/", requireAuth, profileController.getProfiles);
 
-profileRouter.get("/profile", requireAuth, profileController.getProfile);
+profileRouter.get("/profile", requireAuth, profileController.getMyProfile);
 
 profileRouter.put(
   "/profile/update",
