@@ -141,7 +141,7 @@ const adminDeleteComment = async (commentId) => {
 
 // profile controller queries
 
-const getProfile = async (userId) => {
+const getMyProfile = async (userId) => {
   try {
     return await prisma.profile.findUnique({
       where: {
@@ -998,7 +998,7 @@ module.exports = {
   adminDeleteComment,
   findUser,
   createUser,
-  getProfile,
+  getMyProfile,
   getProfiles,
   deleteProfile,
   updateProfile,

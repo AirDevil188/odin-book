@@ -2,9 +2,9 @@ const { body, validationResult } = require("express-validator");
 const db = require("../db/queries");
 const { verifyPassword, createHashedPassword } = require("../utils/utils");
 
-const getProfile = async (req, res, next) => {
+const getMyProfile = async (req, res, next) => {
   const { id } = req.user;
-  const profile = await db.getProfile(id);
+  const profile = await db.getMyProfile(id);
 
   return res.status(200).json(profile);
 };
@@ -58,7 +58,7 @@ const updateProfile = async (req, res, next) => {
 
 module.exports = {
   getProfiles,
-  getProfile,
+  getMyProfile,
   updateProfile,
   deleteProfile,
 };
