@@ -4,7 +4,7 @@ const { verifyPassword, createHashedPassword } = require("../utils/utils");
 
 const getMyProfile = async (req, res, next) => {
   const { id } = req.user;
-  const profile = await db.getMyProfile(id);
+  const profile = await db.getProfile(id);
 
   return res.status(200).json(profile);
 };
