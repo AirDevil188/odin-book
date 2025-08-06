@@ -788,6 +788,49 @@ const updateMessage = async (text, messageId, userId) => {
 
 // group controller queries
 
+const getGroups = async (userId) => {
+  try {
+    return prisma.group.findMany({
+      where: {
+        users: {
+          some: {
+            userId,
+          },
+        },
+      },
+      include: {
+        messages: {},
+        users: {},
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
+const getGroup = async (userId, groupId) => {
+  try {
+    return prisma.group.findUnique({
+      where: {
+        id: groupId,
+        users: {
+          some: {
+            userId: userId,
+          },
+        },
+      },
+      include: {
+        users: {},
+        messages: {},
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
 const createGroup = async (userId, userIds, name, text) => {
   userIds = [...new Set(userIds)];
 
@@ -882,6 +925,70 @@ const createGroup = async (userId, userIds, name, text) => {
   }
 };
 
+const addUsersToGroup = async (userIds, groupId, userId) => {
+  userIds = new Set(userIds);
+
+  try {
+    return await prisma.$transaction(async () => {
+      const group = await prisma.group.findUnique({
+        where: {
+          id: groupId,
+          users: {
+            some: {
+              userId: userId,
+            },
+          },
+        },
+      });
+      if (!group) {
+        throw Error("Group not found");
+      }
+      return prisma.group.update({
+        where: {
+          id: groupId,
+        },
+        data: {
+          users: {
+            connect: userIds.map((id) => ({ userId: id })),
+          },
+        },
+        include: {
+          messages: {},
+          users: {},
+        },
+      });
+    });
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
+const deleteGroup = async (userId, groupId, deleteUserId) => {
+  try {
+    return await prisma.group.update({
+      where: {
+        id: groupId,
+        users: {
+          some: {
+            userId: userId,
+          },
+        },
+      },
+      data: {
+        users: {
+          disconnect: {
+            userId: userId,
+          },
+        },
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
 module.exports = {
   adminGetPosts,
   adminGetPost,
@@ -916,5 +1023,9 @@ module.exports = {
   deleteChat,
   createMessage,
   updateMessage,
+  getGroups,
+  getGroup,
   createGroup,
+  addUsersToGroup,
+  deleteGroup,
 };
