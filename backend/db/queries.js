@@ -964,7 +964,8 @@ const addUsersToGroup = async (userIds, groupId, userId) => {
   }
 };
 
-const deleteGroup = async (userId, groupId, deleteUserId) => {
+const deleteGroup = async (userId, groupId, deleteUserIds) => {
+  deleteUserIds = [...new Set(deleteUserIds)];
   try {
     return await prisma.group.update({
       where: {
@@ -977,9 +978,7 @@ const deleteGroup = async (userId, groupId, deleteUserId) => {
       },
       data: {
         users: {
-          disconnect: {
-            userId: userId,
-          },
+          disconnect: deleteUserIds.map((id) => ({ userId: id })),
         },
       },
     });
