@@ -926,7 +926,7 @@ const createGroup = async (userId, userIds, name, text) => {
 };
 
 const addUsersToGroup = async (userIds, groupId, userId) => {
-  userIds = new Set(userIds);
+  userIds = [...new Set(userIds)];
 
   try {
     return await prisma.$transaction(async () => {
