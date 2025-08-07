@@ -15,6 +15,8 @@ const profileRouter = require("./routes/profileRouter");
 const postRouter = require("./routes/postRouter");
 const commentRouter = require("./routes/commentRouter");
 const messageRouter = require("./routes/messageRouter");
+const chatRouter = require("./routes/chatRouter");
+const groupRouter = require("./routes/groupRouter");
 
 app.use(cors({ origin: "http//:localhost:3000" }));
 app.use(helmet());
@@ -28,6 +30,8 @@ app.use("/profiles", profileRouter);
 app.use("/profiles/posts", postRouter);
 app.use("/profiles/comments", commentRouter);
 app.use("/profiles/messages", messageRouter);
+app.use("/profiles/chats", chatRouter);
+app.use("/profiles/groups", groupRouter);
 
 helmet.contentSecurityPolicy({
   directives: {
