@@ -933,30 +933,67 @@ const addUsersToGroup = async (userIds, groupId, userId) => {
       const group = await prisma.group.findUnique({
         where: {
           id: groupId,
+        },
+        include: {
           users: {
-            some: {
-              userId: userId,
+            where: {
+              OR: [
+                {
+                  userId: userId,
+                  role: "admin",
+                },
+                {
+                  userId: {
+                    in: userIds,
+                  },
+                },
+              ],
             },
           },
         },
       });
+
       if (!group) {
         throw Error("Group not found");
       }
-      return prisma.group.update({
-        where: {
-          id: groupId,
-        },
-        data: {
-          users: {
-            connect: userIds.map((id) => ({ userId: id })),
+
+      // check if the loggedInUser is admin or moderator
+      const authorizedUser = group.users.find(
+        (user) =>
+          (userId === user.userId && user.role === "admin") ||
+          user.role === "moderator"
+      );
+
+      if (!authorizedUser) {
+        throw Error("User is not authorized to make this request");
+      }
+
+      // check if the user is in the group
+      const existingUser = group.users.find((user) =>
+        userIds.includes(user.userId)
+      );
+
+      if (existingUser) {
+        throw Error("User already exists");
+      } else {
+        // add new user/users
+        return await prisma.group.update({
+          where: {
+            id: groupId,
           },
-        },
-        include: {
-          messages: {},
-          users: {},
-        },
-      });
+          data: {
+            users: {
+              create: userIds.map((id) => ({
+                userId: id,
+              })),
+            },
+          },
+          include: {
+            messages: {},
+            users: {},
+          },
+        });
+      }
     });
   } catch (err) {
     console.log(err);
