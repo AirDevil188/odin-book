@@ -9,6 +9,21 @@ const getMyProfile = async (req, res, next) => {
   return res.status(200).json(profile);
 };
 
+const getProfile = async (req, res, next) => {
+  console.error("getProfile");
+  const { userId } = req.params;
+  try {
+    const profile = await db.getProfile(userId);
+    return res
+      .status(200)
+      .json({ message: "User profile successfully fetched", profile: profile });
+  } catch (err) {
+    return res.status(500).json({
+      message: "There was a problem with your request to fetch user profile",
+    });
+  }
+};
+
 const getProfiles = async (req, res, next) => {
   const { id } = req.user;
   const profiles = await db.getProfiles(id);
@@ -58,6 +73,7 @@ const updateProfile = async (req, res, next) => {
 
 module.exports = {
   getProfiles,
+  getProfile,
   getMyProfile,
   updateProfile,
   deleteProfile,

@@ -10,6 +10,18 @@ profileRouter.get("/", requireAuth, profileController.getProfiles);
 
 profileRouter.get("/profile", requireAuth, profileController.getMyProfile);
 
+profileRouter.get(
+  "/profile/friend-requests",
+  requireAuth,
+  friendController.getFriendRequests
+);
+
+profileRouter.get(
+  "/profile/:userId",
+  requireAuth,
+  profileController.getProfile
+);
+
 profileRouter.put(
   "/profile/update",
   requireAuth,
@@ -20,14 +32,6 @@ profileRouter.delete(
   "/profile/delete",
   requireAuth,
   profileController.deleteProfile
-);
-
-// friend routes
-
-profileRouter.get(
-  "/profile/friend-requests",
-  requireAuth,
-  friendController.getFriendRequests
 );
 
 profileRouter.post(
