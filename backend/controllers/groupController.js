@@ -60,6 +60,10 @@ const deleteGroup = async (req, res, next) => {
 
   try {
     const group = await db.deleteGroup(id, groupId, deleteUserId);
+    return res.status(200).json({
+      message: "Group successfully deleted",
+      group: group,
+    });
   } catch (err) {
     console.log(err);
     return res.status(500).json({
