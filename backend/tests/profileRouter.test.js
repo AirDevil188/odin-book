@@ -108,6 +108,36 @@ describe("Profile router functionality", () => {
     expect(res.body).toHaveProperty("userId");
     expect(res.body).toHaveProperty("avatar");
   });
+
+  it("should fetch user profile", async () => {
+    const user = await prisma.user.create({
+      data: {
+        email: "testing@email.com",
+        password: hashedPassword,
+        profile: {
+          create: {
+            firstName: "Test",
+            lastName: "Test",
+          },
+        },
+      },
+    });
+    await authorizedUser
+      .post("/log-in")
+      .send({ email: testEmail, password: testPassword })
+      .expect(200);
+
+    const res = await authorizedUser
+      .get(`/profiles/profile/${user.id}`)
+      .expect(200);
+
+    expect(res.body.profile).toHaveProperty("id");
+    expect(res.body.profile).toHaveProperty("firstName", "Test");
+    expect(res.body.profile).toHaveProperty("lastName", "Test");
+    expect(res.body.profile).toHaveProperty("avatar");
+    expect(res.body.profile).toHaveProperty("userId", user.id);
+  });
+
   it("should return Wrong Password for incorrect password input", async () => {
     await authorizedUser
       .post("/log-in")
@@ -255,6 +285,7 @@ describe("Profile router functionality", () => {
       "message",
       "Friend requests fetched successfully"
     );
+
     expect(res.body.friendRequests[0]).toHaveProperty("createdAt");
     expect(res.body.friendRequests[0]).toHaveProperty("receiverId", receiverId);
     expect(res.body.friendRequests[0]).toHaveProperty("status", "pending");
