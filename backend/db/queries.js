@@ -1001,21 +1001,66 @@ const addUsersToGroup = async (userIds, groupId, userId) => {
   }
 };
 
-const deleteGroup = async (userId, groupId, deleteUserIds) => {
-  deleteUserIds = [...new Set(deleteUserIds)];
+const deleteUsersFromGroup = async (userIds, groupId, userId) => {
+  userIds = [...new Set(userIds)];
+
   try {
-    return await prisma.group.update({
-      where: {
-        id: groupId,
-        users: {
-          some: {
-            userId: userId,
+    return await prisma.$transaction(async () => {
+      // look if the group exists
+      const group = await prisma.group.findUnique({
+        where: {
+          id: groupId,
+        },
+        include: {
+          users: {
+            where: {
+              OR: [
+                {
+                  role: "admin" || "moderator",
+                },
+                {
+                  userId: {
+                    in: userIds,
+                  },
+                },
+              ],
+            },
           },
         },
-      },
-      data: {
-        users: {
-          disconnect: deleteUserIds.map((id) => ({ userId: id })),
+      });
+      if (!group) {
+        throw Error("Group not found");
+      }
+
+      // check if loggedInUser is moderator or admin
+      const authorizedUser = group.users.find(
+        (user) => userId === user.userId && user.role !== "user"
+      );
+
+      if (!authorizedUser) {
+        throw Error("User is not authorized to make this request");
+      }
+
+      return await prisma.groupMembers.deleteMany({
+        where: {
+          userId: { in: userIds },
+          groupId: groupId,
+        },
+      });
+    });
+  } catch (err) {
+    console.log(err);
+    return err;
+  }
+};
+
+const deleteGroup = async (userId, groupId) => {
+  try {
+    return await prisma.groupMembers.delete({
+      where: {
+        userId_groupId: {
+          userId: userId,
+          groupId: groupId,
         },
       },
     });
@@ -1063,5 +1108,6 @@ module.exports = {
   getGroup,
   createGroup,
   addUsersToGroup,
+  deleteUsersFromGroup,
   deleteGroup,
 };
