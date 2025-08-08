@@ -9,6 +9,6 @@ groupRouter.get("/", requireAuth, groupController.getGroups);
 
 groupRouter.get("/:groupId", requireAuth, groupController.getGroup);
 
-groupRouter.put("/:groupId", requireAuth, groupController.addUsersToGroup);
+groupRouter.put("/:groupId/add", requireAuth, groupController.addUsersToGroup);
 
 module.exports = groupRouter;
