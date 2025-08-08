@@ -940,7 +940,7 @@ const addUsersToGroup = async (userIds, groupId, userId) => {
               OR: [
                 {
                   userId: userId,
-                  role: "admin",
+                  role: "admin" || "moderator",
                 },
                 {
                   userId: {
