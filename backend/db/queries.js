@@ -959,9 +959,7 @@ const addUsersToGroup = async (userIds, groupId, userId) => {
 
       // check if the loggedInUser is admin or moderator
       const authorizedUser = group.users.find(
-        (user) =>
-          (userId === user.userId && user.role === "admin") ||
-          user.role === "moderator"
+        (user) => userId === user.id && user.role !== "user"
       );
 
       if (!authorizedUser) {
