@@ -35,7 +35,7 @@ const getGroup = async (req, res, next) => {
   }
 };
 
-const addUserToGroup = async (req, res, next) => {
+const addUsersToGroup = async (req, res, next) => {
   const { id } = req.user;
   const { userIds } = req.body;
   const { groupId } = req.params;
@@ -75,6 +75,6 @@ const deleteGroup = async (req, res, next) => {
 module.exports = {
   getGroups,
   getGroup,
-  addUserToGroup,
+  addUsersToGroup,
   deleteGroup,
 };
