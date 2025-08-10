@@ -204,6 +204,22 @@ describe("Test Group Router functionality", () => {
     );
   });
 
+  it("should delete group for the authorized user", async () => {
+    await authorizedUser
+      .post("/log-in")
+      .send({
+        email: testEmails[1],
+        password: testPassword,
+      })
+      .expect(200);
+
+    const res = await authorizedUser
+      .delete(`/profiles/groups/${groupIds[0]}`)
+      .expect(200);
+
+    expect(res.body).toHaveProperty("message", "Group successfully deleted");
+  });
+
   it("should not allow users that are not admin to add new users to the group", async () => {
     await authorizedUser
       .post("/log-in")
