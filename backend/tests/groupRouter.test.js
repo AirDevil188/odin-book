@@ -38,6 +38,7 @@ describe("Test Group Router functionality", () => {
   let hashedPassword;
   let authorizedUser;
   let users;
+  let newGroupTestingUserId;
 
   let userIds = [];
   let groupIds = [];
@@ -81,7 +82,10 @@ describe("Test Group Router functionality", () => {
         data: {
           name: "Test Group",
           users: {
-            create: userIds.map((id) => ({ userId: id })),
+            create: userIds.map((id) => ({
+              userId: id,
+              role: userIds[1] == id ? "admin" : "user",
+            })),
           },
           messages: {
             create: {
@@ -90,11 +94,28 @@ describe("Test Group Router functionality", () => {
             },
           },
         },
+        include: {
+          users: {},
+        },
       });
       return group;
     });
     const groups = await Promise.all(groupPromise);
     groupIds = groups.map((group) => group.id);
+
+    const newGroupTestingUser = await prisma.user.create({
+      data: {
+        email: "new@user.com",
+        password: hashedPassword,
+        profile: {
+          create: {
+            firstName: "Test",
+            lastName: "Test",
+          },
+        },
+      },
+    });
+    newGroupTestingUserId = newGroupTestingUser.id;
   });
 
   authorizedUser = request.agent(app);
@@ -135,5 +156,118 @@ describe("Test Group Router functionality", () => {
     expect(res.body.group).toHaveProperty("id", groupIds[0]);
     expect(res.body.group).toHaveProperty("messages");
     expect(res.body.group).toHaveProperty("users");
+  });
+
+  it("should create new group", async () => {
+    await authorizedUser
+      .post("/log-in")
+      .send({
+        email: testEmails[1],
+        password: testPassword,
+      })
+      .expect(200);
+
+    const res = await authorizedUser
+      .post("/profiles/groups/add")
+      .send({
+        name: "Test Group",
+        userIds: userIds,
+        text: "First Group message",
+      })
+      .expect(200);
+
+    expect(res.body).toHaveProperty("message", "Group successfully created");
+    expect(res.body.group).toHaveProperty("id");
+    expect(res.body.group).toHaveProperty("users");
+    expect(res.body.group.users).toHaveLength(3);
+  });
+
+  it("should add users to group", async () => {
+    await authorizedUser
+      .post("/log-in")
+      .send({
+        email: testEmails[1],
+        password: testPassword,
+      })
+      .expect(200);
+
+    const res = await authorizedUser
+      .put(`/profiles/groups/${groupIds[0]}/add`)
+      .send({
+        userIds: [newGroupTestingUserId],
+      })
+      .expect(200);
+
+    expect(res.body).toHaveProperty(
+      "message",
+      "User successfully added to the group"
+    );
+  });
+
+  it("should not allow users that are not admin to add new users to the group", async () => {
+    await authorizedUser
+      .post("/log-in")
+      .send({
+        email: testEmails[0],
+        password: testPassword,
+      })
+      .expect(200);
+
+    const res = await authorizedUser
+      .put(`/profiles/groups/${groupIds[0]}/add`)
+      .send({
+        userIds: [newGroupTestingUserId],
+      })
+      .expect(500);
+
+    expect(res.body).toHaveProperty(
+      "message",
+      "There was a problem with your request to add user to the group"
+    );
+  });
+
+  it("should let admins of the group to remove the user from the group", async () => {
+    await authorizedUser
+      .post("/log-in")
+      .send({
+        email: testEmails[1],
+        password: testPassword,
+      })
+      .expect(200);
+
+    const res = await authorizedUser
+      .delete(`/profiles/groups/${groupIds[0]}/delete`)
+      .send({
+        userIds: [userIds[0]],
+      });
+
+    expect(res.body).toHaveProperty(
+      "message",
+      "User successfully deleted from the group"
+    );
+
+    expect(res.body.group).toHaveProperty("count", 1);
+  });
+
+  it("should not allow users that are not admin to delete  users from the group", async () => {
+    await authorizedUser
+      .post("/log-in")
+      .send({
+        email: testEmails[0],
+        password: testPassword,
+      })
+      .expect(200);
+
+    const res = await authorizedUser
+      .delete(`/profiles/groups/${groupIds[0]}/delete`)
+      .send({
+        userIds: [userIds[1]],
+      })
+      .expect(500);
+
+    expect(res.body).toHaveProperty(
+      "message",
+      "There was a problem with your request to remove user from the group"
+    );
   });
 });
