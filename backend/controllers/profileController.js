@@ -10,7 +10,6 @@ const getMyProfile = async (req, res, next) => {
 };
 
 const getProfile = async (req, res, next) => {
-  console.error("getProfile");
   const { userId } = req.params;
   try {
     const profile = await db.getProfile(userId);
