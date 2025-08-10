@@ -35,6 +35,23 @@ const getGroup = async (req, res, next) => {
   }
 };
 
+const createGroup = async (req, res, next) => {
+  const { id } = req.user;
+  const { userIds, name, text } = req.body;
+
+  try {
+    const group = await db.createGroup(id, userIds, name, text);
+    res.status(200).json({
+      message: "Group successfully created",
+      group: group,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      message: "There was a problem with your request to create a group",
+    });
+  }
+};
+
 const addUsersToGroup = async (req, res, next) => {
   const { id } = req.user;
   const { userIds } = req.body;
@@ -49,6 +66,25 @@ const addUsersToGroup = async (req, res, next) => {
   } catch (err) {
     return res.status(500).json({
       message: "There was a problem with your request to add user to the group",
+    });
+  }
+};
+
+const deleteUsersFromGroup = async (req, res, next) => {
+  const { id } = req.user;
+  const { userIds } = req.body;
+  const { groupId } = req.params;
+
+  try {
+    const group = await db.deleteUsersFromGroup(userIds, groupId, id);
+    return res.status(200).json({
+      message: "User successfully deleted from the group",
+      group: group,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      message:
+        "There was a problem with your request to remove user from the group",
     });
   }
 };
@@ -76,5 +112,7 @@ module.exports = {
   getGroups,
   getGroup,
   addUsersToGroup,
+  deleteUsersFromGroup,
+  createGroup,
   deleteGroup,
 };
