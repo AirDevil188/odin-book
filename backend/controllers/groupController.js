@@ -95,10 +95,9 @@ const deleteUsersFromGroup = async (req, res, next) => {
 const deleteGroup = async (req, res, next) => {
   const { id } = req.user;
   const { groupId } = req.params;
-  const { deleteUserId } = req.body;
 
   try {
-    const group = await db.deleteGroup(id, groupId, deleteUserId);
+    const group = await db.deleteGroup(id, groupId);
     return res.status(200).json({
       message: "Group successfully deleted",
       group: group,
