@@ -46,6 +46,7 @@ const createGroup = async (req, res, next) => {
       group: group,
     });
   } catch (err) {
+    console.log(err);
     return res.status(500).json({
       message: "There was a problem with your request to create a group",
     });
@@ -64,6 +65,7 @@ const addUsersToGroup = async (req, res, next) => {
       group: group,
     });
   } catch (err) {
+    console.log(err);
     return res.status(500).json({
       message: "There was a problem with your request to add user to the group",
     });
@@ -82,6 +84,7 @@ const deleteUsersFromGroup = async (req, res, next) => {
       group: group,
     });
   } catch (err) {
+    console.log(err);
     return res.status(500).json({
       message:
         "There was a problem with your request to remove user from the group",
