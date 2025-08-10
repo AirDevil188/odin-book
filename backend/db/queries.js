@@ -917,6 +917,10 @@ const createGroup = async (userId, userIds, name, text) => {
             },
           },
         },
+        include: {
+          users: {},
+          messages: {},
+        },
       });
     }
   } catch (err) {
@@ -959,7 +963,7 @@ const addUsersToGroup = async (userIds, groupId, userId) => {
 
       // check if the loggedInUser is admin or moderator
       const authorizedUser = group.users.find(
-        (user) => userId === user.id && user.role !== "user"
+        (user) => userId === user.userId && user.role !== "user"
       );
 
       if (!authorizedUser) {
@@ -1048,7 +1052,7 @@ const deleteUsersFromGroup = async (userIds, groupId, userId) => {
     });
   } catch (err) {
     console.log(err);
-    return err;
+    throw err;
   }
 };
 
