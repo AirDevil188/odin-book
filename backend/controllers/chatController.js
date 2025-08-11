@@ -43,7 +43,7 @@ const deleteChat = async (req, res, next) => {
     const chat = await db.deleteChat(chatroomId, id);
     return res
       .status(200)
-      .json({ message: "Message successfully deleted", chat: chat });
+      .json({ message: "Chat successfully deleted", chat: chat });
   } catch (err) {
     console.log(err);
     return res.status(500).json({
