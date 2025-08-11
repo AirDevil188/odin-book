@@ -52,8 +52,28 @@ const deleteChat = async (req, res, next) => {
   }
 };
 
+const createChat = async (req, res, next) => {
+  try {
+    const { id } = req.user;
+    const { text } = req.body;
+    const { userId2 } = req.params;
+
+    const chat = await db.createChat(id, userId2, text);
+    return res.status(200).json({
+      message: "Chat successfully created",
+      chat: chat,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      message: "There was a problem with your request to create a new chat",
+    });
+  }
+};
+
 module.exports = {
   getChats,
   getChat,
+  createChat,
   deleteChat,
 };
