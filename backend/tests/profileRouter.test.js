@@ -31,65 +31,62 @@ const prisma = new PrismaClient({
 
 describe("Profile router functionality", () => {
   let authorizedUser;
-  const testEmail = "tes@test.com";
-  const testEmail2 = "tes2@test.com";
+  let testEmails = [
+    "tes@test.com",
+    "tes2@test.com",
+    "testing@email.com",
+    "testemail@email.com",
+  ];
   const testPassword = "Test1234!";
   let hashedPassword;
+  let user;
+  let userIds;
 
   beforeAll(async () => {
     hashedPassword = await createHashedPassword(testPassword);
+    authorizedUser = request.agent(app);
   });
 
   beforeEach(async () => {
     await prisma.friendship.deleteMany({});
     await prisma.friendRequests.deleteMany({});
-    await prisma.profile.deleteMany({});
     await prisma.user.deleteMany({});
 
-    await prisma.user.create({
-      data: {
-        email: testEmail,
-        password: hashedPassword,
-        profile: {
-          create: {
-            firstName: "Test",
-            lastName: "Test",
-            avatar: null,
+    const usersPromise = Array.from({ length: 4 }).map(async (_, i) => {
+      user = await prisma.user.create({
+        data: {
+          email: testEmails[i],
+          password: hashedPassword,
+          profile: {
+            create: {
+              firstName: "Test",
+              lastName: "Test",
+              avatar: null,
+            },
           },
         },
-      },
+      });
+      return user;
     });
+    const users = await Promise.all(usersPromise);
+    userIds = users.map((user) => user.id);
   });
-
-  authorizedUser = request.agent(app);
 
   afterAll(async () => {
     await prisma.$disconnect();
   });
 
   it("should receive user profiles", async () => {
-    await prisma.user.create({
-      data: {
-        email: "testing@email.com",
-        password: hashedPassword,
-        profile: {
-          create: {
-            firstName: "Jack",
-            lastName: "Sparrow",
-          },
-        },
-      },
-    });
     await authorizedUser
       .post("/log-in")
-      .send({ email: testEmail, password: testPassword })
+      .send({ email: testEmails[0], password: testPassword })
       .expect(200);
 
     const res = await authorizedUser.get("/profiles").expect(200);
 
     expect(res.body.profiles[0]).toHaveProperty("id");
-    expect(res.body.profiles[0]).toHaveProperty("firstName", "Jack");
-    expect(res.body.profiles[0]).toHaveProperty("lastName", "Sparrow");
+    expect(res.body.profiles[0]).toHaveProperty("firstName", "Test");
+    expect(res.body.profiles[0]).toHaveProperty("lastName", "Test");
     expect(res.body.profiles[0]).toHaveProperty("userId");
     expect(res.body.profiles[0]).toHaveProperty("avatar");
   });
@@ -97,7 +94,7 @@ describe("Profile router functionality", () => {
   it("should receive authorized user profile", async () => {
     await authorizedUser
       .post("/log-in")
-      .send({ email: testEmail, password: testPassword })
+      .send({ email: testEmails[0], password: testPassword })
       .expect(200);
 
     const res = await authorizedUser.get("/profiles/profile").expect(200);
@@ -110,39 +107,27 @@ describe("Profile router functionality", () => {
   });
 
   it("should fetch user profile", async () => {
-    const user = await prisma.user.create({
-      data: {
-        email: "testing@email.com",
-        password: hashedPassword,
-        profile: {
-          create: {
-            firstName: "Test",
-            lastName: "Test",
-          },
-        },
-      },
-    });
     await authorizedUser
       .post("/log-in")
-      .send({ email: testEmail, password: testPassword })
+      .send({ email: testEmails[0], password: testPassword })
       .expect(200);
 
     const res = await authorizedUser
-      .get(`/profiles/profile/${user.id}`)
+      .get(`/profiles/profile/${userIds[0]}`)
       .expect(200);
 
     expect(res.body.profile).toHaveProperty("id");
     expect(res.body.profile).toHaveProperty("firstName", "Test");
     expect(res.body.profile).toHaveProperty("lastName", "Test");
     expect(res.body.profile).toHaveProperty("avatar");
-    expect(res.body.profile).toHaveProperty("userId", user.id);
+    expect(res.body.profile).toHaveProperty("userId", userIds[0]);
   });
 
   it("should return Wrong Password for incorrect password input", async () => {
     await authorizedUser
       .post("/log-in")
       .send({
-        email: testEmail,
+        email: testEmails[0],
         password: testPassword,
       })
       .expect(200);
@@ -161,7 +146,7 @@ describe("Profile router functionality", () => {
     await authorizedUser
       .post("/log-in")
       .send({
-        email: testEmail,
+        email: testEmails[0],
         password: testPassword,
       })
       .expect(200);
@@ -190,7 +175,7 @@ describe("Profile router functionality", () => {
     await authorizedUser
       .post("/log-in")
       .send({
-        email: testEmail,
+        email: testEmails[0],
         password: testPassword,
       })
       .expect(200);
@@ -203,25 +188,12 @@ describe("Profile router functionality", () => {
   });
 
   it("should create new friend request", async () => {
-    const testingUser2 = await prisma.user.create({
-      data: {
-        email: testEmail2,
-        password: hashedPassword,
-        profile: {
-          create: {
-            firstName: "Test",
-            lastName: "Test",
-            avatar: null,
-          },
-        },
-      },
-    });
-    const receiverId = testingUser2.id;
+    const receiverId = userIds[1];
 
     await authorizedUser
       .post("/log-in")
       .send({
-        email: testEmail,
+        email: testEmails[0],
         password: testPassword,
       })
       .expect(200);
@@ -239,28 +211,12 @@ describe("Profile router functionality", () => {
     );
     expect(res.body.friendRequest).toHaveProperty("createdAt");
     expect(res.body.friendRequest).toHaveProperty("requesterId");
-    expect(res.body.friendRequest).toHaveProperty(
-      "receiverId",
-      testingUser2.id
-    );
+    expect(res.body.friendRequest).toHaveProperty("receiverId", userIds[1]);
     expect(res.body.friendRequest).toHaveProperty("status", "pending");
   });
 
   it("should get friend requests from authorized user", async () => {
-    const testingUser2 = await prisma.user.create({
-      data: {
-        email: testEmail2,
-        password: hashedPassword,
-        profile: {
-          create: {
-            firstName: "Test",
-            lastName: "Test",
-            avatar: null,
-          },
-        },
-      },
-    });
-    const receiverId = testingUser2.id;
+    const receiverId = userIds[1];
 
     await authorizedUser
       .post("/log-in")
@@ -293,24 +249,11 @@ describe("Profile router functionality", () => {
   });
 
   it("should delete friend request", async () => {
-    const testingUser2 = await prisma.user.create({
-      data: {
-        email: testEmail2,
-        password: hashedPassword,
-        profile: {
-          create: {
-            firstName: "Test",
-            lastName: "Test",
-            avatar: null,
-          },
-        },
-      },
-    });
-    const receiverId = testingUser2.id;
+    const receiverId = userIds[1];
     await authorizedUser
       .post("/log-in")
       .send({
-        email: testEmail,
+        email: testEmails[0],
         password: testPassword,
       })
       .expect(200);
@@ -335,48 +278,19 @@ describe("Profile router functionality", () => {
     );
     expect(res.body.friendRequest).toHaveProperty("createdAt");
     expect(res.body.friendRequest).toHaveProperty("requesterId");
-    expect(res.body.friendRequest).toHaveProperty(
-      "receiverId",
-      testingUser2.id
-    );
+    expect(res.body.friendRequest).toHaveProperty("receiverId", userIds[1]);
     expect(res.body.friendRequest).toHaveProperty("status", "pending");
   });
 
   it("should accept a friend request", async () => {
-    const testingUser1 = await prisma.user.create({
-      data: {
-        email: "test3@email.com",
-        password: hashedPassword,
-        profile: {
-          create: {
-            firstName: "Test",
-            lastName: "Test",
-          },
-        },
-      },
-    });
-    const testingUser2 = await prisma.user.create({
-      data: {
-        email: testEmail2,
-        password: hashedPassword,
-        profile: {
-          create: {
-            firstName: "Test",
-            lastName: "Test",
-            avatar: null,
-          },
-        },
-      },
-    });
+    const receiverId = userIds[2];
 
-    const receiverId = testingUser2.id;
-
-    const requesterId = testingUser1.id;
+    const requesterId = userIds[1];
 
     await authorizedUser
       .post("/log-in")
       .send({
-        email: "test3@email.com",
+        email: testEmails[1],
         password: "Test1234!",
       })
       .expect(200);
@@ -388,7 +302,7 @@ describe("Profile router functionality", () => {
 
     await authorizedUser
       .post("/log-in")
-      .send({ email: testEmail2, password: testPassword })
+      .send({ email: testEmails[2], password: testPassword })
       .expect(200);
 
     const res = await authorizedUser
@@ -435,40 +349,14 @@ describe("Profile router functionality", () => {
   });
 
   it("should delete a friend", async () => {
-    const testingUser1 = await prisma.user.create({
-      data: {
-        email: "test3@email.com",
-        password: hashedPassword,
-        profile: {
-          create: {
-            firstName: "Test",
-            lastName: "Test",
-          },
-        },
-      },
-    });
-    const testingUser2 = await prisma.user.create({
-      data: {
-        email: testEmail2,
-        password: hashedPassword,
-        profile: {
-          create: {
-            firstName: "Test",
-            lastName: "Test",
-            avatar: null,
-          },
-        },
-      },
-    });
+    const receiverId = userIds[2];
 
-    const receiverId = testingUser2.id;
-
-    const requesterId = testingUser1.id;
+    const requesterId = userIds[1];
 
     await authorizedUser
       .post("/log-in")
       .send({
-        email: "test3@email.com",
+        email: testEmails[1],
         password: "Test1234!",
       })
       .expect(200);
@@ -480,7 +368,7 @@ describe("Profile router functionality", () => {
 
     await authorizedUser
       .post("/log-in")
-      .send({ email: testEmail2, password: testPassword })
+      .send({ email: testEmails[2], password: testPassword })
       .expect(200);
 
     await authorizedUser
