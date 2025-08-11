@@ -718,6 +718,10 @@ const deleteChat = async (chatRoomId, userId) => {
           },
         },
       },
+      include: {
+        users: {},
+        messages: {},
+      },
     });
   } catch (err) {
     console.log(err);
