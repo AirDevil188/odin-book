@@ -665,12 +665,18 @@ const createChat = async (userId1, userId2, text) => {
     if (existingChat && existingChat.users.length === userIds.length) {
       // if chat already exists then create message for it
       const existingChatId = existingChat.id;
-      await prisma.message.create({
+      const newMessage = await prisma.message.create({
         data: {
           text: text,
           chatroomId: existingChatId,
+          userId: userId1,
+        },
+        include: {
+          user: {},
+          chats: {},
         },
       });
+      existingChat.messages.push(newMessage);
       return existingChat;
     } else {
       // if chat doesn't exists create it and create new message
@@ -686,6 +692,10 @@ const createChat = async (userId1, userId2, text) => {
           users: {
             connect: userIds.map((id) => ({ userId: id })),
           },
+        },
+        include: {
+          users: {},
+          messages: {},
         },
       });
     }
