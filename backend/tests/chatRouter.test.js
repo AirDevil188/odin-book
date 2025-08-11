@@ -183,4 +183,21 @@ describe("Test Chat Router functionality", () => {
     expect(res.body.chat.messages).toHaveLength(2);
     expect(res.body.chat.users).toHaveLength(2);
   });
+
+  it("should delete chat for loggedInUser", async () => {
+    await authorizedUser
+      .post("/log-in")
+      .send({
+        email: testEmails[0],
+        password: testPassword,
+      })
+      .expect(200);
+
+    const res = await authorizedUser
+      .put(`/profiles/chats/${chatroomId}/delete`)
+      .expect(200);
+
+    expect(res.body).toHaveProperty("message", "Chat successfully deleted");
+    expect(res.body.chat.users).toHaveLength(1);
+  });
 });
