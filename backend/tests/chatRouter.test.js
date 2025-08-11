@@ -37,6 +37,8 @@ describe("Test Chat Router functionality", () => {
   let authorizedUser;
   let chat;
   let chatroomId;
+  let userIds;
+  let testingUser;
 
   beforeAll(async () => {
     hashedPassword = await createHashedPassword(testPassword);
@@ -65,7 +67,7 @@ describe("Test Chat Router functionality", () => {
     });
 
     const users = await Promise.all(userPromise);
-    const userIds = users.map((user) => user.id);
+    userIds = users.map((user) => user.id);
 
     chat = await prisma.chat.create({
       data: {
@@ -82,6 +84,18 @@ describe("Test Chat Router functionality", () => {
     });
 
     chatroomId = chat.id;
+    testingUser = await prisma.user.create({
+      data: {
+        email: "testtest@email.com",
+        password: hashedPassword,
+        profile: {
+          create: {
+            firstName: "Test",
+            lastName: "Test",
+          },
+        },
+      },
+    });
   });
 
   afterAll(async () => {
@@ -130,5 +144,43 @@ describe("Test Chat Router functionality", () => {
     expect(res.body.chat).toHaveProperty("id", chatroomId);
     expect(res.body.chat).toHaveProperty("users");
     expect(res.body.chat).toHaveProperty("messages");
+  });
+
+  it("should create new chat", async () => {
+    await authorizedUser
+      .post("/log-in")
+      .send({
+        email: testEmails[0],
+        password: testPassword,
+      })
+      .expect(200);
+
+    const res = await authorizedUser
+      .post(`/profiles/chats/${testingUser.id}`)
+      .send({ text: "First Chat message" })
+      .expect(200);
+
+    expect(res.body).toHaveProperty("message", "Chat successfully created");
+    expect(res.body.chat.messages).toHaveLength(1);
+    expect(res.body.chat.users).toHaveLength(2);
+  });
+
+  it("should create new message for existing chat", async () => {
+    await authorizedUser
+      .post("/log-in")
+      .send({
+        email: testEmails[0],
+        password: testPassword,
+      })
+      .expect(200);
+
+    const res = await authorizedUser
+      .post(`/profiles/chats/${userIds[1]}`)
+      .send({ text: "Second message in the chat" })
+      .expect(200);
+
+    expect(res.body).toHaveProperty("message", "Chat successfully created");
+    expect(res.body.chat.messages).toHaveLength(2);
+    expect(res.body.chat.users).toHaveLength(2);
   });
 });
