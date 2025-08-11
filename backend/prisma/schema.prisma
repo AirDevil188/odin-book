@@ -35,6 +35,7 @@ model Profile {
   user                   User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   chats                  Chat[]           @relation("ChatToProfile")
   groups                 GroupMembers[]   @relation("GroupToProfile")
+  ImagesPosts            ImagesPosts[]
 
   @@map("profiles")
 }
@@ -63,17 +64,29 @@ model FriendRequests {
 }
 
 model Post {
-  id        String       @id @default(ulid())
+  id        String        @id @default(ulid())
   text      String
   authorId  String
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
-  likes     Int          @default(0)
-  likedBy   LikedPosts[] @relation("PostLikedBy")
-  author    Profile      @relation("AuthorPosts", fields: [authorId], references: [userId], onDelete: Cascade)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  likes     Int           @default(0)
+  likedBy   LikedPosts[]  @relation("PostLikedBy")
+  author    Profile       @relation("AuthorPosts", fields: [authorId], references: [userId], onDelete: Cascade)
   comments  Comment[]
+  images    ImagesPosts[] @relation("PostImages")
 
   @@map("posts")
+}
+
+model ImagesPosts {
+  userId   String
+  postId   String
+  imageUrl String
+  post     Post    @relation("PostImages", fields: [postId], references: [id])
+  user     Profile @relation(fields: [userId], references: [userId])
+
+  @@unique([userId, postId])
+  @@map("post_images")
 }
 
 model LikedPosts {
@@ -147,9 +160,9 @@ model Message {
   chatroomId String?
   groupId    String?
   userId     String
-  chats      Chat?    @relation(fields: [chatroomId], references: [id])
-  group      Group?   @relation(fields: [groupId], references: [id])
-  user       Profile  @relation(fields: [userId], references: [userId])
+  chats      Chat?    @relation(fields: [chatroomId], references: [id], onDelete: Cascade)
+  group      Group?   @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user       Profile  @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
   @@map("messages")
 }
