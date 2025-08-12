@@ -85,7 +85,7 @@ model ImagesPosts {
   post     Post    @relation("PostImages", fields: [postId], references: [id])
   user     Profile @relation(fields: [userId], references: [userId])
 
-  @@unique([userId, postId])
+  @@id([postId, imageUrl])
   @@map("post_images")
 }
 
