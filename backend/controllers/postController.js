@@ -38,9 +38,9 @@ const getPost = async (req, res, next) => {
 
 const createPost = async (req, res, next) => {
   const { id } = req.user;
-  const { text } = req.body;
+  const { text, images } = req.body;
   try {
-    const post = await db.createPost(text, id);
+    const post = await db.createPost(text, id, images);
     res.status(200).json({
       message: "Post created successfully",
       post: post,
