@@ -369,12 +369,19 @@ const getFriendPost = async (postId, userId) => {
   }
 };
 
-const createPost = async (text, userId) => {
+const createPost = async (text, userId, images) => {
+  images = [...new Set(images)];
   try {
     return await prisma.post.create({
       data: {
         text: text,
         authorId: userId,
+        images: {
+          create: images.map((imageUrl) => ({
+            imageUrl: imageUrl,
+            userId: userId,
+          })),
+        },
       },
     });
   } catch (err) {
