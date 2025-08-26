@@ -16,5 +16,6 @@ export default defineConfig({
     coverage: {
       reporter: ["text", "json", "html"],
     },
+    setupFiles: "./src/__tests__/setup.js",
   },
 });
