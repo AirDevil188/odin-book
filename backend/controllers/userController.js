@@ -93,7 +93,7 @@ const logInUser = async (req, res, next) => {
 
   const user = await db.findUser(email);
   if (!user)
-    return res.status(403).json({
+    return res.status(401).json({
       message: "Wrong email or password",
     });
 
