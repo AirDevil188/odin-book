@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { it, describe, expect } from "vitest";
-import Input from "../components/Input";
+import Input from "../components/Input/Input";
 
 describe("Tests Input component", () => {
   it("should render input component", () => {

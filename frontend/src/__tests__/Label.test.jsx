@@ -1,8 +1,7 @@
-import Label from "../components/Label";
-
+import Label from "../components/Label/Label";
 import { render, screen } from "@testing-library/react";
 import { it, describe, expect } from "vitest";
-import Input from "../components/Input";
+import Input from "../components/Input/Input";
 
 describe("Label component", () => {
   it("should render label component", () => {
