@@ -12,14 +12,14 @@ export default defineConfig({
     },
   },
   plugins: [
-    react(),
     tanstackRouter({
       target: "react",
       autoCodeSplitting: true,
     }),
+    react(),
   ],
   test: {
-    environment: "happy-dom",
+    environment: "jsdom",
     coverage: {
       reporter: ["text", "json", "html"],
     },
