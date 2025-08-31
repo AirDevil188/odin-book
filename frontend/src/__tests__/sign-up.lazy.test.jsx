@@ -121,4 +121,33 @@ describe("Signin component", () => {
     );
     expect(confirmPasswordErrorPara).toBeInTheDocument();
   });
+
+  it("should return error 422 if the user with the provided email already exists", async () => {
+    const user = userEvent.setup();
+    render(
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>,
+    );
+    const emailInput = await screen.findByPlaceholderText(/email/i);
+    const firstNameInput = await screen.findByPlaceholderText("First Name");
+    const lastNameInput = await screen.findByPlaceholderText("Last Name");
+    const passwordInput = await screen.findByPlaceholderText("Password");
+    const confirmPasswordInput =
+      await screen.findByPlaceholderText("Confirm Password");
+    const signUpButton = await screen.findByRole("button", {
+      name: /sign up/i,
+    });
+
+    await user.type(emailInput, "test@email.com");
+    await user.type(firstNameInput, "Test");
+    await user.type(lastNameInput, "Test");
+    await user.type(passwordInput, "Test1234!");
+    await user.type(confirmPasswordInput, "Test1234!");
+
+    await user.click(signUpButton);
+
+    const emailPara = await screen.findByText(/User already exists/i);
+    expect(emailPara).toBeInTheDocument();
+  });
 });
