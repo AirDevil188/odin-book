@@ -36,15 +36,6 @@ apiRouter.use("/profiles/messages", messageRouter);
 apiRouter.use("/profiles/chats", chatRouter);
 apiRouter.use("/profiles/groups", groupRouter);
 
-// app.use("/api", userRouter);
-// app.use("/admin", adminRouter);
-// app.use("/profiles", profileRouter);
-// app.use("/profiles/posts", postRouter);
-// app.use("/profiles/comments", commentRouter);
-// app.use("/profiles/messages", messageRouter);
-// app.use("/profiles/chats", chatRouter);
-// app.use("/profiles/groups", groupRouter);
-
 app.use("/api", apiRouter);
 
 helmet.contentSecurityPolicy({
