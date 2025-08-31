@@ -73,6 +73,7 @@ const signUpUser = [
       };
       return res.json({
         message: "User Created!",
+        token,
         userInfo,
         expiresAt,
       });
@@ -111,6 +112,7 @@ const logInUser = async (req, res, next) => {
 
     return res.json({
       message: "Authentication successful",
+      token,
       userInfo,
       expiresAt,
     });
