@@ -1,12 +1,18 @@
 import { http, HttpResponse } from "msw";
 
+const user = {
+  email: "test@email.com",
+  first_name: "Test",
+  last_name: "Test",
+};
+
 export const handlers = [
   http.post("/api/log-in", async ({ request }) => {
     const { email, password } = await request.json();
 
     // wrong credentials
     if (email !== "test@email.com" || password !== "Test1234!") {
-      return new HttpResponse.json(
+      return HttpResponse.json(
         { message: "Wrong email or password" },
         { status: 401 },
       );
@@ -38,6 +44,20 @@ export const handlers = [
             {
               msg: "Passwords must match.",
               path: "confirm_password",
+            },
+          ],
+        },
+        { status: 422 },
+      );
+    }
+
+    if (email === user.email) {
+      return HttpResponse.json(
+        {
+          errors: [
+            {
+              msg: "User already exists",
+              path: "email",
             },
           ],
         },
