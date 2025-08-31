@@ -150,4 +150,64 @@ describe("Signin component", () => {
     const emailPara = await screen.findByText(/User already exists/i);
     expect(emailPara).toBeInTheDocument();
   });
+
+  it("should return error 422 if the first name doesn't contain at least only one character", async () => {
+    const user = userEvent.setup();
+    render(
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>,
+    );
+    const emailInput = await screen.findByPlaceholderText(/email/i);
+    const lastNameInput = await screen.findByPlaceholderText("Last Name");
+    const passwordInput = await screen.findByPlaceholderText("Password");
+    const confirmPasswordInput =
+      await screen.findByPlaceholderText("Confirm Password");
+    const signUpButton = await screen.findByRole("button", {
+      name: /sign up/i,
+    });
+
+    await user.type(emailInput, "testtt@emai.com");
+
+    await user.type(lastNameInput, "Test");
+    await user.type(passwordInput, "Test1234!");
+    await user.type(confirmPasswordInput, "Test1234!");
+
+    await user.click(signUpButton);
+
+    const firstNamePara = await screen.findByText(
+      /First Name must contain at least one character/i,
+    );
+    expect(firstNamePara).toBeInTheDocument();
+  });
+
+  it("should return error 422 if the last name doesn't contain at least only one character", async () => {
+    const user = userEvent.setup();
+    render(
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>,
+    );
+    const emailInput = await screen.findByPlaceholderText(/email/i);
+    const firstNameInput = await screen.findByPlaceholderText("First Name");
+    const passwordInput = await screen.findByPlaceholderText("Password");
+    const confirmPasswordInput =
+      await screen.findByPlaceholderText("Confirm Password");
+    const signUpButton = await screen.findByRole("button", {
+      name: /sign up/i,
+    });
+
+    await user.type(emailInput, "testtt@emai.com");
+
+    await user.type(firstNameInput, "Test");
+    await user.type(passwordInput, "Test1234!");
+    await user.type(confirmPasswordInput, "Test1234!");
+
+    await user.click(signUpButton);
+
+    const lastNamePara = await screen.findByText(
+      /Last Name must contain at least one character/i,
+    );
+    expect(lastNamePara).toBeInTheDocument();
+  });
 });

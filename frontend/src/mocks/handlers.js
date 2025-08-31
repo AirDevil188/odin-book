@@ -65,6 +65,36 @@ export const handlers = [
       );
     }
 
+    if (first_name === "") {
+      return HttpResponse.json(
+        {
+          errors: [
+            {
+              msg: "First Name must contain at least one character",
+              path: "first_name",
+            },
+          ],
+        },
+        {
+          status: 422,
+        },
+      );
+    }
+
+    if (last_name === "") {
+      return HttpResponse.json(
+        {
+          errors: [
+            {
+              msg: "Last Name must contain at least one character",
+              path: "last_name",
+            },
+          ],
+        },
+        { status: 422 },
+      );
+    }
+
     // successful request
     return HttpResponse.json(
       {
