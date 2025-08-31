@@ -71,6 +71,15 @@ export function SignupRoute() {
                     : null
                 }
               />
+              {inputErrors.email ? (
+                <>
+                  <div className={styles["signup__error-container"]}>
+                    <p className={styles["signup__error-paragraph"]}>
+                      {inputErrors.email}
+                    </p>
+                  </div>
+                </>
+              ) : null}
             </div>
             <div className={styles["signup__form-group"]}>
               <Label htmlFor={"first_name"} />
