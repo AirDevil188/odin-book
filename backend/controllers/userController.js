@@ -31,12 +31,10 @@ const validateUser = [
   }),
   body("first_name")
     .trim()
-    .notEmpty()
     .isLength({ min: 1 })
     .withMessage("First Name must contain at least one character"),
   body("last_name")
     .trim()
-    .notEmpty()
     .isLength({ min: 1 })
     .withMessage("Last Name must contain at least one character"),
 ];
@@ -49,8 +47,8 @@ const signUpUser = [
       return res.status(422).json(errors);
     }
 
-    const hashedPassword = await createHashedPassword(password);
     try {
+      const hashedPassword = await createHashedPassword(password);
       const user = await db.createUser(
         email,
         hashedPassword,
@@ -75,7 +73,6 @@ const signUpUser = [
       };
       return res.json({
         message: "User Created!",
-        token,
         userInfo,
         expiresAt,
       });
@@ -114,7 +111,6 @@ const logInUser = async (req, res, next) => {
 
     return res.json({
       message: "Authentication successful",
-      token,
       userInfo,
       expiresAt,
     });
