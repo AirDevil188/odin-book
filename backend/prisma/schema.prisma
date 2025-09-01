@@ -7,12 +7,20 @@ datasource db {
   url      = env("TEST_DATABASE_URL")
 }
 
+model Token {
+  id          String @id @default(uuid())
+  hashedToken String @unique
+  userId      String
+  user        User   @relation(fields: [userId], references: [id])
+}
+
 model User {
-  id       String   @id @default(ulid())
-  email    String   @unique
-  password String
-  role     Role     @default(user)
-  profile  Profile?
+  id            String   @id @default(ulid())
+  email         String   @unique
+  password      String
+  role          Role     @default(user)
+  profile       Profile?
+  refreshTokens Token[]
 
   @@map("users")
 }
