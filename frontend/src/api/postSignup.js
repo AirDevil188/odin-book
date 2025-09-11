@@ -25,5 +25,5 @@ export default async function postSignup(
     throw new Error(JSON.stringify(simplifiedErrors));
   }
 
-  return await response.json();
+  return await response.data;
 }
