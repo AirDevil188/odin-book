@@ -10,6 +10,7 @@ const port = process.env.PORT;
 const app = express();
 const apiRouter = express.Router();
 
+const tokenRouter = require("./routes/tokenRouter");
 const userRouter = require("./routes/userRouter");
 const adminRouter = require("./routes/adminRouter");
 const profileRouter = require("./routes/profileRouter");
@@ -19,15 +20,14 @@ const messageRouter = require("./routes/messageRouter");
 const chatRouter = require("./routes/chatRouter");
 const groupRouter = require("./routes/groupRouter");
 
-const corsOptions = ["http://localhost:5173"];
-
-app.use(cors(corsOptions));
+app.use(cors());
 app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 apiRouter.use("/", userRouter);
+apiRouter.use("/token", tokenRouter);
 apiRouter.use("/admin", adminRouter);
 apiRouter.use("/profiles", profileRouter);
 apiRouter.use("/profiles/posts", postRouter);
@@ -47,6 +47,12 @@ helmet.contentSecurityPolicy({
 });
 
 app.use((err, req, res, next) => {
+  if (err.name === "UnauthorizedError") {
+    console.log(err);
+    return res.status(401).json({
+      message: "You are not authorized to access this page",
+    });
+  }
   console.log(err);
   res.status(500).send(err);
 });
