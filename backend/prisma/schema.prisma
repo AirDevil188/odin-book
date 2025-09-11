@@ -8,10 +8,11 @@ datasource db {
 }
 
 model Token {
-  id          String @id @default(uuid())
-  hashedToken String @unique
+  selector    String   @id
+  hashedToken String   @unique @db.Text
   userId      String
-  user        User   @relation(fields: [userId], references: [id])
+  user        User     @relation(fields: [userId], references: [id])
+  expiresAt   DateTime
 }
 
 model User {
