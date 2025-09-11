@@ -1,3 +1,5 @@
+import axios from "../api/axiosInstance";
+
 export default async function postSignup(
   email,
   first_name,
@@ -5,18 +7,12 @@ export default async function postSignup(
   password,
   confirm_password,
 ) {
-  const response = await fetch("/api/sign-up", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      email,
-      first_name,
-      last_name,
-      password,
-      confirm_password,
-    }),
+  const response = await axios.post("/sign-up", {
+    email,
+    first_name,
+    last_name,
+    password,
+    confirm_password,
   });
 
   if (!response.ok) {
