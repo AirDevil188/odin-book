@@ -1,10 +1,13 @@
 const { body, validationResult } = require("express-validator");
 const db = require("../db/queries");
 const {
-  verifyPassword,
-  createHashedPassword,
+  verifyHash,
   decodeToken,
   singToken,
+  newDateOneWeek,
+  generateRawToken,
+  createHash,
+  generateSelectorToken,
 } = require("../utils/utils");
 
 const validateUser = [
@@ -48,7 +51,7 @@ const signUpUser = [
     }
 
     try {
-      const hashedPassword = await createHashedPassword(password);
+      const hashedPassword = await createHash(password);
       const user = await db.createUser(
         email,
         hashedPassword,
@@ -95,24 +98,41 @@ const logInUser = async (req, res, next) => {
       message: "Wrong email or password",
     });
 
-  const match = await verifyPassword(password, user.password);
+  const match = await verifyHash(password, user.password);
 
   if (match) {
-    const { ...rest } = user;
+    const { password, ...rest } = user;
 
     const userInfo = Object.assign({}, { ...rest });
 
-    const token = await singToken(userInfo);
-    const decodedToken = decodeToken(token);
+    const accessToken = await singToken(userInfo);
+    const decodedToken = decodeToken(accessToken);
     const expiresAt = decodedToken.exp;
 
-    res.cookie("token", token, {
+    const refreshToken = generateRawToken();
+    const selectorRefreshToken = generateSelectorToken();
+    const hashedRefreshedToken = await createHash(refreshToken);
+
+    try {
+      await db.generateRefreshToken(
+        selectorRefreshToken,
+        hashedRefreshedToken,
+        userInfo.id,
+        newDateOneWeek(new Date())
+      );
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
+
+    res.cookie("refreshToken", `${selectorRefreshToken}.${refreshToken}`, {
       httpOnly: true,
+      maxAge: 604800000, // one week
     });
 
     return res.json({
       message: "Authentication successful",
-      token,
+      accessToken,
       userInfo,
       expiresAt,
     });
