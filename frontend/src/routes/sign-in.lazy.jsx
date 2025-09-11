@@ -6,12 +6,14 @@ import Button from "../components/Button/Button";
 import { useMutation } from "@tanstack/react-query";
 import postLogin from "../api/postLogin";
 import styles from "./sign-in.lazy.module.css";
+import { useAuth } from "../context/AuthContext";
 
 export const Route = createLazyFileRoute("/sign-in")({
   component: SigninRoute,
 });
 
 export function SigninRoute() {
+  const authContext = useAuth();
   const navigate = useNavigate();
   const mutation = useMutation({
     mutationFn: (formData) => {
@@ -19,6 +21,7 @@ export function SigninRoute() {
     },
     onSuccess: (data) => {
       localStorage.setItem("toast_success", data.message);
+      authContext.setAuthState(data);
       navigate({ to: "/" });
     },
   });
