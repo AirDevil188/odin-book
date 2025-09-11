@@ -1,4 +1,6 @@
-import { Outlet, createRootRoute } from "@tanstack/react-router";
+// __root.jsx
+import { createRootRoute } from "@tanstack/react-router";
+import { Outlet } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import ErrorBoundary from "../components/Error Boundary/ErrorBoundary";
 import { ToastContainer } from "react-toastify";
@@ -9,9 +11,9 @@ export const Route = createRootRoute({
       <>
         <ErrorBoundary>
           <Outlet />
-          <TanStackRouterDevtools />
-          <ToastContainer />
         </ErrorBoundary>
+        <TanStackRouterDevtools />
+        <ToastContainer />
       </>
     );
   },
