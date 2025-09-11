@@ -18,6 +18,11 @@ const queryClient = new QueryClient();
 
 // mock useNavigate
 const useNavigateMock = vi.fn();
+// mock setAuthState
+const mockSetAuthState = vi.fn();
+const mockUseAuth = () => ({
+  setAuthState: mockSetAuthState,
+});
 
 // import actual dependency
 vi.mock("@tanstack/react-router", async (importActual) => {
@@ -27,6 +32,11 @@ vi.mock("@tanstack/react-router", async (importActual) => {
     useNavigate: () => useNavigateMock,
   };
 });
+
+// import authContext
+vi.mock("../context/AuthContext", () => ({
+  useAuth: () => mockUseAuth(),
+}));
 
 // test router
 const rootRoute = createRootRoute({
@@ -73,6 +83,7 @@ describe("Login route component", () => {
     await user.type(passwordInput, "Test1234!");
     await user.click(loginButton);
 
+    screen.debug();
     expect(useNavigateMock).toHaveBeenCalledWith({ to: "/" });
   });
 
