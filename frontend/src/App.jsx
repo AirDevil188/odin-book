@@ -1,18 +1,45 @@
 import { createRoot } from "react-dom/client";
-import { StrictMode } from "react";
+import { StrictMode, useEffect } from "react";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { toast } from "react-toastify";
 
-const router = createRouter({ routeTree });
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import AxiosInterceptor from "./context/AxiosInterceptor";
+
+const router = createRouter({
+  routeTree,
+  context: {
+    auth: undefined,
+  },
+});
+const queryClient = new QueryClient();
+
+// refresh token useEffect
 
 const App = () => {
-  return <RouterProvider router={router} />;
+  const auth = useAuth();
+  console.log(auth);
+  useEffect(() => {
+    toast.success("message");
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} context={auth} />
+    </QueryClientProvider>
+  );
 };
 
 const container = document.getElementById("root");
 const root = createRoot(container);
 root.render(
   <StrictMode>
-    <App />
+    <AuthProvider>
+      <AxiosInterceptor>
+        <App />
+      </AxiosInterceptor>
+    </AuthProvider>
   </StrictMode>,
 );
