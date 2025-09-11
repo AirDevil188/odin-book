@@ -58,15 +58,31 @@ const signUpUser = [
         first_name,
         last_name
       );
-      const token = await singToken(user);
-      const decodedToken = decodeToken(token);
+      const accessToken = await singToken(user);
+      const decodedToken = decodeToken(accessToken);
       const expiresAt = decodedToken.exp;
 
-      res.cookie("token", token, {
-        httpOnly: true,
-      });
+      // generate raw refresh token
+      const rawRefreshToken = generateRawToken();
+      const selectorRefreshToken = generateSelectorToken();
 
-      const { role } = user;
+      // hash raw refresh token string
+      const hashedRefreshToken = await createHash(rawRefreshToken);
+
+      // push the refresh token into the db
+
+      const { role, id } = user;
+      await db.generateRefreshToken(
+        selectorRefreshToken,
+        hashedRefreshToken,
+        id,
+        newDateOneWeek(new Date())
+      );
+
+      res.cookie("refreshToken", `${selectorRefreshToken}.${rawRefreshToken}`, {
+        httpOnly: true,
+        maxAge: 604800000, // one week
+      });
 
       const userInfo = {
         email,
@@ -76,7 +92,7 @@ const signUpUser = [
       };
       return res.json({
         message: "User Created!",
-        token,
+        accessToken,
         userInfo,
         expiresAt,
       });
