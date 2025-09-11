@@ -16,6 +16,69 @@ const prisma = new PrismaClient({
   },
 });
 
+// refresh token
+
+const generateRefreshToken = async (selector, token, userId, date) => {
+  try {
+    return await prisma.token.create({
+      data: {
+        selector: selector,
+        hashedToken: token,
+        userId: userId,
+        expiresAt: date,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
+const findRefreshTokenBySelector = async (selector) => {
+  try {
+    return await prisma.token.findFirst({
+      where: {
+        selector: selector,
+        expiresAt: { gte: new Date() },
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
+const updateRefreshToken = async (selector, newHashedToken, newExpiresAt) => {
+  try {
+    return await prisma.token.update({
+      where: {
+        selector: selector,
+      },
+      data: {
+        hashedToken: newHashedToken,
+        expiresAt: newExpiresAt,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
+const invalidateRefreshToken = async (userId) => {
+  try {
+    return await prisma.token.delete({
+      where: {
+        userId: userId,
+        hashedToken: hashedToken,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
 // user controller queries
 
 const findUser = async (email) => {
@@ -23,6 +86,19 @@ const findUser = async (email) => {
     return await prisma.user.findUnique({
       where: {
         email: email,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
+const findUserById = async (userId) => {
+  try {
+    return await prisma.user.findFirst({
+      where: {
+        id: userId,
       },
     });
   } catch (err) {
@@ -1094,6 +1170,10 @@ const deleteGroup = async (userId, groupId) => {
 };
 
 module.exports = {
+  findRefreshTokenBySelector,
+  generateRefreshToken,
+  updateRefreshToken,
+  invalidateRefreshToken,
   adminGetPosts,
   adminGetPost,
   adminDeleteUser,
@@ -1101,6 +1181,7 @@ module.exports = {
   adminDeletePost,
   adminDeleteComment,
   findUser,
+  findUserById,
   createUser,
   getProfile,
   getProfiles,
