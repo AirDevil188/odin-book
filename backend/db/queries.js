@@ -65,12 +65,11 @@ const updateRefreshToken = async (selector, newHashedToken, newExpiresAt) => {
   }
 };
 
-const invalidateRefreshToken = async (userId) => {
+const invalidateRefreshToken = async (selector) => {
   try {
     return await prisma.token.delete({
       where: {
-        userId: userId,
-        hashedToken: hashedToken,
+        selector: selector,
       },
     });
   } catch (err) {
