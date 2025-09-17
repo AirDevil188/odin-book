@@ -1,9 +1,4 @@
-import {
-  createFileRoute,
-  Link,
-  redirect,
-  useNavigate,
-} from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import styles from "./sign-up.module.css";
 import Form from "../components/Form/Form";
 import Label from "../components/Label/Label";
@@ -14,13 +9,7 @@ import postSignup from "../api/postSignup";
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 
-export const Route = createFileRoute("/sign-up")({
-  beforeLoad: ({ context }) => {
-    const { isAuthenticated } = context;
-    if (isAuthenticated()) {
-      throw redirect({ to: "/" });
-    }
-  },
+export const Route = createFileRoute("/_public/sign-up")({
   component: SignupRoute,
 });
 

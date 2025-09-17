@@ -1,9 +1,4 @@
-import {
-  useNavigate,
-  Link,
-  createFileRoute,
-  redirect,
-} from "@tanstack/react-router";
+import { useNavigate, Link, createFileRoute } from "@tanstack/react-router";
 import Form from "../components/Form/Form";
 import Input from "../components/Input/Input";
 import Label from "../components/Label/Label";
@@ -13,13 +8,7 @@ import postLogin from "../api/postLogin";
 import styles from "./sign-in.module.css";
 import { useAuth } from "../context/AuthContext";
 
-export const Route = createFileRoute("/sign-in")({
-  beforeLoad: ({ context }) => {
-    const { isAuthenticated } = context;
-    if (isAuthenticated()) {
-      throw redirect("/");
-    }
-  },
+export const Route = createFileRoute("/_public/sign-in")({
   component: SigninRoute,
 });
 
