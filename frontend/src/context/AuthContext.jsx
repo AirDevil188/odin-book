@@ -1,4 +1,5 @@
-import { useState, createContext, useEffect, useContext } from "react";
+import { useState, createContext, useContext } from "react";
+import { redirect } from "@tanstack/react-router";
 
 const AuthContext = createContext();
 
@@ -8,6 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [authState, setAuthState] = useState({
     accessToken: null,
     userInfo: userInfo ? JSON.stringify(userInfo) : {},
+    expiresAt: null,
   });
 
   const setAuthInfo = ({ accessToken, userInfo, expiresAt }) => {
@@ -15,8 +17,6 @@ export const AuthProvider = ({ children }) => {
 
     return setAuthState({ accessToken, userInfo, expiresAt });
   };
-
-  useEffect(() => {});
 
   const logout = () => {
     // remove userInfo from the local storage
@@ -27,6 +27,7 @@ export const AuthProvider = ({ children }) => {
       accessToken: null,
       userInfo: {},
     }));
+    redirect({ to: "/sign-in" });
   };
 
   const isAuthenticated = () => {
