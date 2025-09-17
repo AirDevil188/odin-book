@@ -1,33 +1,30 @@
+// App.jsx
 import { createRoot } from "react-dom/client";
-import { StrictMode, useEffect } from "react";
+import { StrictMode } from "react";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { toast } from "react-toastify";
-
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import AxiosInterceptor from "./context/AxiosInterceptor";
 
-const router = createRouter({
-  routeTree,
-  context: {
-    auth: undefined,
-  },
-});
 const queryClient = new QueryClient();
 
-// refresh token useEffect
+const createRouterWithContext = (auth) => {
+  return createRouter({
+    routeTree,
+    context: {
+      auth,
+    },
+  });
+};
 
 const App = () => {
-  const auth = useAuth();
-  console.log(auth);
-  useEffect(() => {
-    toast.success("message");
-  }, []);
+  const auth = useAuth(); // This hook returns the context you want to use.
+  const router = createRouterWithContext(auth);
 
   return (
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} context={auth} />
+      <RouterProvider router={router} />
     </QueryClientProvider>
   );
 };
