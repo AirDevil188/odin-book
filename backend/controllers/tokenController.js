@@ -30,6 +30,9 @@ const getRefreshToken = async (req, res, next) => {
     const refreshTokenRecord = await db.findRefreshTokenBySelector(selector);
 
     if (!refreshTokenRecord) {
+      res.clearCookie("refreshToken");
+      await db.invalidateRefreshToken(selector);
+
       return res.status(401).json({
         message: "Unauthorized: Invalid token selector",
       });
@@ -39,6 +42,9 @@ const getRefreshToken = async (req, res, next) => {
     const isValid = await verifyHash(rawToken, refreshTokenRecord.hashedToken);
 
     if (!isValid) {
+      res.clearCookie("refreshToken");
+      await db.invalidateRefreshToken(selector);
+
       return res.status(401).json({
         message: "Unauthorized: Invalid token",
       });
@@ -48,6 +54,9 @@ const getRefreshToken = async (req, res, next) => {
     const user = await db.findUserById(refreshTokenRecord.userId);
 
     if (!user) {
+      res.clearCookie("refreshToken");
+      await db.invalidateRefreshToken(selector);
+
       return res.status(200).json({
         message: "Unauthorized: Invalid user",
       });
