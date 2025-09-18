@@ -1,5 +1,6 @@
 import { useState, createContext, useContext } from "react";
 import { redirect } from "@tanstack/react-router";
+import axios from "../api/axiosInstance";
 
 const AuthContext = createContext();
 
@@ -18,15 +19,24 @@ export const AuthProvider = ({ children }) => {
     return setAuthState({ accessToken, userInfo, expiresAt });
   };
 
-  const logout = () => {
+  const logout = async () => {
     // remove userInfo from the local storage
     localStorage.removeItem("userInfo");
     // delete token from the state
-    setAuthState((prevState) => ({
-      ...prevState,
+    setAuthState({
+      expiresAt: null,
       accessToken: null,
       userInfo: {},
-    }));
+    });
+    try {
+      // invalidate refresh token
+      const res = await axios.delete("/token/refresh/invalidate");
+      const data = await res.data;
+      return data;
+    } catch (err) {
+      console.log(err);
+    }
+
     redirect({ to: "/sign-in" });
   };
 
