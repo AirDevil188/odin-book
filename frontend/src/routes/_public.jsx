@@ -2,11 +2,14 @@ import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import axios from "../api/axiosInstance";
 
 export const Route = createFileRoute("/_public")({
-  beforeLoad: async ({ context }) => {
+  beforeLoad: async ({ context, location }) => {
     const { setAuthState, isAuthenticated } = context.auth;
 
+    if (location.pathname === "/") {
+      throw redirect({ to: "/dashboard" });
+    }
+
     if (isAuthenticated()) {
-      console.log("public");
       throw redirect({ to: "/dashboard" });
     }
 
@@ -23,7 +26,6 @@ export const Route = createFileRoute("/_public")({
         return;
       }
     } catch (err) {
-      console.log(err);
       return;
     }
   },
