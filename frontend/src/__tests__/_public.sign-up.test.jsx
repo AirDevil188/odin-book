@@ -1,4 +1,5 @@
 import { it, describe, expect, vi, afterEach } from "vitest";
+
 import { screen, render, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {
@@ -9,12 +10,25 @@ import {
   Outlet,
   RouterProvider,
 } from "@tanstack/react-router";
-import { SignupRoute } from "../routes/sign-up.lazy";
+import { SignupRoute } from "../routes/_public.sign-up";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { server } from "../mocks/server";
 
 // Mock useNavigate so we can test for navigation without an actual router
 const useNavigateMock = vi.fn();
+
+// mock useSetAuthState hook
+const mockSetAuthState = vi.fn();
+
+// mockUseAuth
+const mockUseAuth = () => ({
+  setAuthState: mockSetAuthState,
+});
+
+// mock useAuth
+vi.mock("../context/AuthContext", () => ({
+  useAuth: () => mockUseAuth(),
+}));
 
 afterEach(() => {
   server.resetHandlers();
