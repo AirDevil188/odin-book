@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event";
 
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 
-import { SigninRoute } from "../routes/sign-in.lazy";
+import { SigninRoute } from "../routes/_public.sign-in";
 import {
   createMemoryHistory,
   createRootRoute,
@@ -45,7 +45,7 @@ const rootRoute = createRootRoute({
 
 const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/login",
+  path: "/sign-in",
   component: SigninRoute,
 });
 
@@ -53,8 +53,8 @@ const routeTree = rootRoute.addChildren([loginRoute]);
 
 const router = createRouter({
   routeTree,
-  // create memoryHistory so that router starts at the /login path
-  history: createMemoryHistory({ initialEntries: ["/login"] }),
+  // create memoryHistory so that router starts at the /sign-in path
+  history: createMemoryHistory({ initialEntries: ["/sign-in"] }),
 });
 
 // clear useNavigate after each test
