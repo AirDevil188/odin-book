@@ -99,6 +99,27 @@ const getRefreshToken = async (req, res, next) => {
   }
 };
 
+const invalidateToken = async (req, res, next) => {
+  try {
+    // get the cookie
+    const rawCookie = req.cookies.refreshToken;
+
+    // split the cookie so that we can extract the selector
+    const [selector, rawToken] = rawCookie.split(".");
+
+    // delete the cookie from the cookie header
+    res.clearCookie("refreshToken");
+    // invalidate token by it's selector
+    await db.invalidateRefreshToken(selector);
+
+    res.status(200).json({ message: "Token successfully invalidated" });
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
 module.exports = {
   getRefreshToken,
+  invalidateToken,
 };
