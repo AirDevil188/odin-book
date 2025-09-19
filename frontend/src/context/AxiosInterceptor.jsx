@@ -1,67 +1,117 @@
 // AxiosInterceptor.jsx
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useAuth } from "./AuthContext";
 import axios from "../api/axiosInstance";
+
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach((promise) => {
+    if (error) {
+      promise.reject(error);
+    } else {
+      promise.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
 
 const AxiosInterceptor = ({ children }) => {
   const authContext = useAuth();
 
+  // Ref to always hold the latest access token
+  const accessTokenRef = useRef(authContext.authState.accessToken);
+
+  // Update ref whenever accessToken changes
   useEffect(() => {
-    // request interceptor
+    accessTokenRef.current = authContext.authState.accessToken;
+  }, [authContext.authState.accessToken]);
+
+  useEffect(() => {
+    // Request interceptor - uses latest token from ref
     const requestInterceptor = axios.interceptors.request.use(
       (config) => {
-        // if accessToken is present put it in the Bearer auth header
-        if (authContext.authState.accessToken) {
-          config.headers.Authorization = `Bearer ${authContext.authState.accessToken}`;
+        const token = accessTokenRef.current;
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
       },
       (error) => Promise.reject(error),
     );
-    // response interceptor
+
+    // Response interceptor - handles 401 and token refresh
     const responseInterceptor = axios.interceptors.response.use(
       (response) => response,
       async (error) => {
         const originalRequest = error.config;
-        // if the error came from the /token/refresh endpoint reject it
-        if (originalRequest._intercepted) {
+
+        // If already retried or intercepted, reject to prevent loops
+        if (originalRequest._retry || originalRequest._intercepted) {
           return Promise.reject(error);
         }
 
-        if (error.response?.status === 401 && !originalRequest._retry) {
-          // prevent loop
+        if (error.response?.status === 401) {
+          if (isRefreshing) {
+            // Queue requests while refreshing
+            return new Promise((resolve, reject) => {
+              failedQueue.push({ resolve, reject });
+            })
+              .then((token) => {
+                originalRequest.headers.Authorization = `Bearer ${token}`;
+                return axios(originalRequest);
+              })
+              .catch((err) => Promise.reject(err));
+          }
+
           originalRequest._retry = true;
+          isRefreshing = true;
 
           try {
-            // make API call to the refresh token endpoint
+            // Call refresh token endpoint
             const response = await axios.post(
               "/token/refresh",
               {},
               { withCredentials: true, _intercepted: true },
             );
+
             const { accessToken, userInfo, expiresAt } = response.data;
-            // set the state
+
+            // Update auth context state with new token
             authContext.setAuthState({ accessToken, userInfo, expiresAt });
 
-            // if all is successful assign  Bearer token with the accessToken
-            originalRequest.headers.Authorization = "Bearer " + accessToken;
+            // Update default header for all future requests
+            axios.defaults.headers.common["Authorization"] =
+              `Bearer ${accessToken}`;
+
+            // Update ref to latest token
+            accessTokenRef.current = accessToken;
+
+            processQueue(null, accessToken);
+
+            // Retry original request with new token
+            originalRequest.headers.Authorization = `Bearer ${accessToken}`;
             return axios(originalRequest);
           } catch (refreshError) {
-            // if there is err reject the Promise and logout the user
+            processQueue(refreshError);
+            // Optionally logout user here or handle the error
             authContext.logout();
             return Promise.reject(refreshError);
+          } finally {
+            isRefreshing = false;
           }
         }
 
         return Promise.reject(error);
       },
     );
-
+    // cleanup function
     return () => {
       axios.interceptors.request.eject(requestInterceptor);
       axios.interceptors.response.eject(responseInterceptor);
     };
-  }, [authContext.authState.accessToken, authContext.logout]);
+  }, [authContext]);
 
   return children;
 };
