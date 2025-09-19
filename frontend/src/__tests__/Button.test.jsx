@@ -17,7 +17,7 @@ describe("Button component", () => {
     render(<Button onClick={mockOnClick} text={"Example"}></Button>);
 
     const buttonElement = screen.getByRole("button", { name: /example/i });
-    await fireEvent.click(buttonElement);
+    fireEvent.click(buttonElement);
 
     expect(mockOnClick).toHaveBeenCalled(1);
   });
