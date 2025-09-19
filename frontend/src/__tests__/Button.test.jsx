@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
 import Button from "../components/Button/Button";
 
 describe("Button component", () => {
@@ -9,5 +9,16 @@ describe("Button component", () => {
     const buttonElement = screen.getByRole("button", { name: /example/i });
     expect(buttonElement).toBeInTheDocument();
     expect(buttonElement).toHaveTextContent("Example");
+  });
+
+  it("should register onClick event", async () => {
+    const mockOnClick = vi.fn();
+
+    render(<Button onClick={mockOnClick} text={"Example"}></Button>);
+
+    const buttonElement = screen.getByRole("button", { name: /example/i });
+    await fireEvent.click(buttonElement);
+
+    expect(mockOnClick).toHaveBeenCalled(1);
   });
 });
