@@ -48,7 +48,7 @@ const AxiosInterceptor = ({ children }) => {
         const originalRequest = error.config;
 
         // If already retried or intercepted, reject to prevent loops
-        if (originalRequest._retry || originalRequest._intercepted) {
+        if (originalRequest._retry) {
           return Promise.reject(error);
         }
 
@@ -73,7 +73,7 @@ const AxiosInterceptor = ({ children }) => {
             const response = await axios.post(
               "/token/refresh",
               {},
-              { withCredentials: true, _intercepted: true },
+              { withCredentials: true },
             );
 
             const { accessToken, userInfo, expiresAt } = response.data;
