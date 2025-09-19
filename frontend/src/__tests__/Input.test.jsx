@@ -1,5 +1,5 @@
-import { render, screen } from "@testing-library/react";
-import { it, describe, expect } from "vitest";
+import { render, screen, fireEvent } from "@testing-library/react";
+import { it, describe, expect, vi } from "vitest";
 import Input from "../components/Input/Input";
 
 describe("Tests Input component", () => {
@@ -32,4 +32,15 @@ describe("Tests Input component", () => {
     const inputElement = screen.getByPlaceholderText(/password/i);
     expect(inputElement).toHaveAttribute("type", "password");
   });
+});
+
+it("should update the value onChange", async () => {
+  const handleChange = vi.fn();
+  render(<Input onChange={handleChange} placeholder="Email" />);
+
+  const inputElement = screen.getByPlaceholderText(/email/i);
+
+  fireEvent.change(inputElement, { target: { value: "test" } });
+
+  expect(handleChange).toHaveBeenCalled(1);
 });
