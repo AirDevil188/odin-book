@@ -30,6 +30,8 @@ model Profile {
   id                     String           @id @default(uuid())
   firstName              String           @map("first_name")
   lastName               String           @map("last_name")
+  dateOfBirth            DateTime?        @map("date_of_birth")
+  bio                    String?          @map("bio")
   userId                 String           @unique
   avatar                 String?
   comments               Comment[]
