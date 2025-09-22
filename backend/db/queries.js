@@ -222,6 +222,14 @@ const getProfile = async (userId) => {
       where: {
         userId: userId,
       },
+      include: {
+        user: {
+          select: {
+            email: true,
+            role: true,
+          },
+        },
+      },
     });
   } catch (err) {
     console.log(err);
