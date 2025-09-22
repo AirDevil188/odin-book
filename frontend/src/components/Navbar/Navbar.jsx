@@ -5,7 +5,7 @@ import FriendRequestIcon from "./FriendRequestIcon";
 
 const Navbar = () => {
   return (
-    <header>
+    <nav>
       <div className={styles["navbar"]}>
         <div className={styles["navbar__left-side"]}>
           <Search />
@@ -16,9 +16,8 @@ const Navbar = () => {
             <FriendRequestIcon />
           </div>
         </div>
-        <nav></nav>
       </div>
-    </header>
+    </nav>
   );
 };
 

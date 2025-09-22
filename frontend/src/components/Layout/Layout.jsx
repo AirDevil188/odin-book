@@ -4,7 +4,9 @@ import Sidebar from "../Sidebar/Sidebar";
 const Layout = () => {
   return (
     <>
-      <Navbar />
+      <header>
+        <Navbar />
+      </header>
       <Sidebar />
     </>
   );
